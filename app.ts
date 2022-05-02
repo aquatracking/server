@@ -1,8 +1,43 @@
 const express = require('express');
 const path = require('path');
 const http = require('http');
+import * as dotenv from 'dotenv';
+import fs from 'fs';
+
+import OpenWeather from "./agents/OpenWeather";
+
+// - - - - - Environment variables - - - - - //
+if(fs.existsSync('.env')) {
+    console.log('Using .env file to supply config environment variables');
+    dotenv.config();
+} else {
+    console.log('.env file not found, creating one with default values');
+
+    fs.writeFileSync('.env', `
+        PORT=3000
+        OPEN_WEATHER_API_KEY=
+        OPEN_WEATHER_LAT=
+        OPEN_WEATHER_LON=
+    `.replaceAll('    ', ''));
+
+    console.log('Please complete .env file')
+
+    process.exit(1);
+}
+
+if(process.env.OPEN_WEATHER_API_KEY === undefined || process.env.OPEN_WEATHER_API_KEY === '') {
+    console.error('Environment variable OPEN_WEATHER_API_KEY is not defined.');
+    process.exit(1);
+} else if(process.env.OPEN_WEATHER_LAT === undefined || process.env.OPEN_WEATHER_LAT === '') {
+    console.error('Environment variable OPEN_WEATHER_LAT is not defined.');
+    process.exit(1);
+} else if(process.env.OPEN_WEATHER_LON === undefined || process.env.OPEN_WEATHER_LON === '') {
+    console.error('Environment variable OPEN_WEATHER_LON is not defined.');
+    process.exit(1);
+}
 
 // - - - - - Serveur Express - - - - - //
+console.log('Starting server...');
 const app = express();
 
 app.use(express.json());
@@ -18,7 +53,14 @@ server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
+// - - - - - Routes - - - - - //
 app.use('/users', require('./routes/users'));
+
+// - - - - - Auto agents - - - - - //
+console.log('Starting agents...');
+OpenWeather.fetch().then(data => {
+    console.log(data);
+})
 
 // - - - - - Functions - - - - - //
 /**
