@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import UsernameAlreadyExistError from "../errors/UsernameAlreadyExistError";
 import EmailAlreadyExistError from "../errors/EmailAlreadyExistError";
 import UserDto from "../dto/UserDto";
+import WrongPasswordError from "../errors/WrongPasswordError";
+import NotFoundError from "../errors/NotFoundError";
 
 export default class UserModel extends Model {
     id: string;
@@ -27,6 +29,30 @@ export default class UserModel extends Model {
                 }
             }
             throw new Error(e);
+        }
+    }
+
+    static async login(email: string, password: string): Promise<UserDto> {
+        let user
+
+        try {
+            user = await UserModel.findOne({
+                where: {
+                    email: email,
+                }
+            });
+        } catch (e) {
+            throw new NotFoundError();
+        }
+
+        if(user) {
+            if(bcrypt.compareSync(password, user.password)) {
+                return new UserDto(user);
+            } else {
+                throw new WrongPasswordError();
+            }
+        } else {
+            throw new NotFoundError();
         }
     }
 }
