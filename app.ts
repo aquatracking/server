@@ -4,7 +4,7 @@ const http = require('http');
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 
-import OpenWeather from "./agents/OpenWeather";
+import Db from './model/db';
 
 // - - - - - Environment variables - - - - - //
 if(fs.existsSync('.env')) {
@@ -18,6 +18,11 @@ if(fs.existsSync('.env')) {
         OPEN_WEATHER_API_KEY=
         OPEN_WEATHER_LAT=
         OPEN_WEATHER_LON=
+        MARIADB_HOST=localhost
+        MARIADB_PORT=3306
+        MARIADB_USER=root
+        MARIADB_PASSWORD=example
+        MARIADB_DATABASE=aquatracking
     `.replaceAll('    ', ''));
 
     console.log('Please complete .env file')
@@ -33,6 +38,21 @@ if(process.env.OPEN_WEATHER_API_KEY === undefined || process.env.OPEN_WEATHER_AP
     process.exit(1);
 } else if(process.env.OPEN_WEATHER_LON === undefined || process.env.OPEN_WEATHER_LON === '') {
     console.error('Environment variable OPEN_WEATHER_LON is not defined.');
+    process.exit(1);
+} else if(process.env.MARIADB_HOST === undefined || process.env.MARIADB_HOST === '') {
+    console.error('Environment variable MARIADB_HOST is not defined.');
+    process.exit(1);
+} else if(process.env.MARIADB_PORT === undefined || process.env.MARIADB_PORT === '') {
+    console.error('Environment variable MARIADB_PORT is not defined.');
+    process.exit(1);
+} else if(process.env.MARIADB_USER === undefined || process.env.MARIADB_USER === '') {
+    console.error('Environment variable MARIADB_USER is not defined.');
+    process.exit(1);
+} else if(process.env.MARIADB_PASSWORD === undefined || process.env.MARIADB_PASSWORD === '') {
+    console.error('Environment variable MARIADB_PASSWORD is not defined.');
+    process.exit(1);
+} else if(process.env.MARIADB_DATABASE === undefined || process.env.MARIADB_DATABASE === '') {
+    console.error('Environment variable MARIADB_DATABASE is not defined.');
     process.exit(1);
 }
 
@@ -54,13 +74,21 @@ server.on('error', onError);
 server.on('listening', onListening);
 
 // - - - - - Routes - - - - - //
+app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
+
+// - - - - - Database - - - - - //
+console.log('Connecting to database...');
+Db.init().catch(err => {
+    console.error(err);
+    process.exit(1);
+});
 
 // - - - - - Auto agents - - - - - //
 console.log('Starting agents...');
-OpenWeather.fetch().then(data => {
+/*OpenWeather.fetch().then(data => {
     console.log(data);
-})
+})*/
 
 // - - - - - Functions - - - - - //
 /**
