@@ -1,5 +1,7 @@
 import Router from 'express';
+
 import UserModel from "../model/UserModel";
+import UserTokenUtil from "../utils/UserTokenUtil";
 import UsernameAlreadyExistError from "../errors/UsernameAlreadyExistError";
 import EmailAlreadyExistError from "../errors/EmailAlreadyExistError";
 import WrongPasswordError from "../errors/WrongPasswordError";
@@ -35,6 +37,8 @@ router.post('/login', function (req, res, next) {
         res.status(400).send('MISSING PARAMETERS');
     } else {
         UserModel.login(req.body.email, req.body.password).then(r => {
+            res.cookie('access_token', UserTokenUtil.generateAccessToken(r), {maxAge: 1000 * 60 * 30});
+            res.cookie('refresh_token', UserTokenUtil.generateRefreshToken(r), {maxAge: 1000 * 60 * 60 * 24 * 7 * 365});
             res.send(r);
         }).catch(e => {
             if(e instanceof WrongPasswordError) {
