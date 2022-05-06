@@ -1,9 +1,9 @@
 import UserModel from "../model/UserModel";
 
 export default class UserDto {
-    private readonly id: string;
-    private readonly username: string;
-    private readonly email: string;
+    readonly id: string;
+    readonly username: string;
+    readonly email: string;
 
     constructor(user: UserModel) {
         this.id = user.id;

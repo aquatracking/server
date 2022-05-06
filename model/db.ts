@@ -1,5 +1,6 @@
 import {DataTypes, Sequelize} from "sequelize";
 import UserModel from "./UserModel";
+import AquariumModel from "./AquariumModel";
 
 export default class Db {
     private static sequelize = null;
@@ -41,6 +42,44 @@ export default class Db {
                 allowNull: false,
             }
         }, {sequelize, tableName: 'users'});
+
+        AquariumModel.init({
+            id: {
+                type: DataTypes.UUID,
+                primaryKey: true,
+                defaultValue: DataTypes.UUIDV4
+            },
+            name: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            description: {
+                type: DataTypes.STRING,
+                defaultValue: '',
+            },
+            salt: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
+            },
+            imageUrl: {
+                type: DataTypes.STRING,
+                defaultValue: '',
+            },
+            size: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            userId: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                references: {
+                    model: UserModel,
+                    key: 'id'
+                }
+            }
+        }, {sequelize, tableName: 'aquariums'});
+
         await sequelize.sync();
 
         console.log('Database initialized');

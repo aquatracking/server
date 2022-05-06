@@ -100,6 +100,7 @@ app.all('*', function (req, res, next) {
                         UserModel.findByPk(user.id).then(function (user) {
                             if (user) {
                                 res.cookie('access_token', UserTokenUtil.generateAccessToken(new UserDto(user)), {maxAge: 1000 * 60 * 30});
+                                req.user = new UserDto(user);
                                 next();
                             } else {
                                 res.status(401).send();
@@ -110,6 +111,7 @@ app.all('*', function (req, res, next) {
                     }
                 });
             } else {
+                req.user = new UserDto(decoded);
                 next();
             }
         });
@@ -117,6 +119,7 @@ app.all('*', function (req, res, next) {
 });
 app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
+app.use('/aquariums', require('./routes/aquariums'));
 
 // - - - - - Database - - - - - //
 console.log('Connecting to database...');
