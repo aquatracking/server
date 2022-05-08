@@ -1,4 +1,5 @@
 import Router from 'express';
+import sharp from 'sharp';
 import AquariumModel from "../model/AquariumModel";
 import AquariumDto from "../dto/AquariumDto";
 import BadRequestError from "../errors/BadRequestError";
@@ -16,27 +17,26 @@ router.get('/', function (req, res, next) {
 });
 
 /* Post a new aquarium. */
-router.post('/', function (req, res, next) {
-    if (!req.body.name || req.body.name === "" || !req.body.size) {
-        res.status(400).json();
-    } else {
-        AquariumModel.createOne({
-            user: req.user,
-            name: req.body.name,
-            description: req.body.description,
-            imageUrl: req.body.imageUrl,
-            salt: req.body.salt,
-            size: req.body.size,
-        }).then(aquarium => {
-            res.json(new AquariumDto(aquarium));
-        }).catch(err => {
-            if (err instanceof BadRequestError) {
-                res.status(400).json();
-            } else {
-                res.status(500).json();
-            }
-        });
-    }
+router.post('/', async function (req, res, next) {
+    AquariumModel.createOne({
+        user: req.user,
+        name: req.body.name,
+        description: req.body.description,
+        startedDate: req.body.startedDate,
+        volume: req.body.volume,
+        imageUrl: req.body.imageUrl,
+        image: req.body.image,
+        salt: req.body.salt,
+    }).then(aquarium => {
+        res.json(new AquariumDto(aquarium));
+    }).catch(err => {
+        console.log(err);
+        if (err instanceof BadRequestError) {
+            res.status(400).json();
+        } else {
+            res.status(500).json();
+        }
+    });
 });
 
 module.exports = router;

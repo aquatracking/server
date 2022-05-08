@@ -6,8 +6,11 @@ export default class AquariumModel extends Model {
     id: string
     name: string
     description: string
+    startedDate: Date
+    volume: number
     salt: boolean
     imageUrl: string
+    image: Blob
     size: number
 
     static getAllOfUser(user: UserDto) {
@@ -22,20 +25,23 @@ export default class AquariumModel extends Model {
                          user,
                          name,
                          description = "",
+                         startedDate,
+                         volume,
                          salt = false,
                          imageUrl = "",
-                         size
-                     }: { user: UserDto, name: string, description?: string, salt?: boolean, imageUrl?: string, size: number })
-    {
+                         image
+                     }: { user: UserDto, name: string, description?: string, startedDate: Date, volume: number, salt?: boolean, imageUrl?: string, image: Blob}) {
         return AquariumModel.create({
             userId: user.id,
             name: name,
             description: description,
+            creationDate: startedDate,
+            volume: volume,
             salt: salt,
             imageUrl: imageUrl,
-            size: size
+            image: image
         }).catch((e) => {
-            if (e.parent.code.includes("WRONG_VALUE")) {
+            if (e.parent?.code?.includes("WRONG_VALUE")) {
                 throw new BadRequestError();
             } else {
                 throw e;

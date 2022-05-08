@@ -57,6 +57,15 @@ export default class Db {
                 type: DataTypes.STRING,
                 defaultValue: '',
             },
+            startedDate: {
+                type: DataTypes.DATE,
+                defaultValue: DataTypes.NOW,
+                allowNull: false,
+            },
+            volume: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
             salt: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
@@ -66,9 +75,9 @@ export default class Db {
                 type: DataTypes.STRING,
                 defaultValue: '',
             },
-            size: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
+            image: {
+                type: DataTypes.BLOB('long'),
+                allowNull: true,
             },
             userId: {
                 type: DataTypes.UUID,

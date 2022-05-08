@@ -73,8 +73,8 @@ if (process.env.OPEN_WEATHER_API_KEY === undefined || process.env.OPEN_WEATHER_A
 console.log('Starting server...');
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb' ,extended: false}));
 app.use(cookieParser());
 
 const port = normalizePort(process.env.PORT || '3000');
@@ -88,7 +88,7 @@ server.on('listening', onListening);
 
 // - - - - - Routes - - - - - //
 app.all('*', function (req, res, next) {
-    if (req.path === '/users/login' || req.path === '/users/register') {
+    if (req.path === '/users/login' || req.path === '/users') {
         next();
     } else {
         jwt.verify(req.cookies.access_token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
