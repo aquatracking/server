@@ -101,6 +101,11 @@ export default class Db {
                 type: DataTypes.DOUBLE,
                 allowNull: false,
             },
+            measuredAt: {
+                type: DataTypes.DATE,
+                defaultValue: DataTypes.NOW,
+                allowNull: false,
+            },
             aquariumId: {
                 type: DataTypes.UUID,
                 allowNull: false,

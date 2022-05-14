@@ -49,10 +49,11 @@ export default class AquariumModel extends Model {
         })
     }
 
-    async addTemperature(temperature: number) {
+    async addTemperature(temperature: number, measuredAt: Date) {
         await TemperatureModel.create({
             aquariumId: this.id,
-            temperature: temperature
+            temperature: temperature,
+            measuredAt: (measuredAt) ? new Date(measuredAt) : new Date()
         })
     }
 }

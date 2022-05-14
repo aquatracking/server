@@ -2,6 +2,9 @@ import Router from 'express';
 import AquariumModel from "../model/AquariumModel";
 import AquariumDto from "../dto/AquariumDto";
 import BadRequestError from "../errors/BadRequestError";
+import TemperatureModel from "../model/TemperatureModel";
+import TemperatureDto from "../dto/TemperatureDto";
+import {Op} from "sequelize";
 
 const router = Router();
 
@@ -53,7 +56,7 @@ router.post('/:id/temperature', async function (req, res, next) {
     if (!aquarium) {
         res.status(404).json();
     } else {
-        aquarium.addTemperature(req.body.temperature).then(() => {
+        aquarium.addTemperature(req.body.temperature, req.body.measuredAt).then(() => {
             console.log(`Temperature of aquarium ${aquarium.id} added : ${req.body.temperature}`);
             res.json();
         }).catch(err => {
@@ -62,5 +65,48 @@ router.post('/:id/temperature', async function (req, res, next) {
         });
     }
 });
+
+/* Get temperature measurements of aquarium */
+router.get('/:id/temperature', async function (req, res, next) {
+    if(!req.params.id) {
+        res.status(400).json();
+        return;
+    }
+
+    const temperatureModels = await TemperatureModel.findAll({
+        where: {
+            aquariumId: req.params.id,
+            measuredAt: {
+                [Op.between]: [req.query.from ? new Date(req.query.from) : new Date((new Date()).getTime() - 24 * 60 * 60 * 1000), req.query.to ? new Date(req.query.to) : new Date()]
+            }
+        },
+        order: [
+            ['measuredAt', 'DESC']
+        ]
+    })
+
+    return res.json(temperatureModels.map(temperatureModel => new TemperatureDto(temperatureModel)));
+})
+
+/* get all aquarium's measurements */
+router.get('/:id/measurements', async function (req, res, next) {
+    if(!req.params.id) {
+        res.status(400).json();
+        return;
+    }
+
+    const temperatureModels = await TemperatureModel.findOne({
+        where: {
+            aquariumId: req.params.id
+        },
+        order: [
+            ['measuredAt', 'DESC']
+        ]
+    })
+
+    return res.json({
+        temperature: (temperatureModels) ? new TemperatureDto(temperatureModels) : null
+    });
+})
 
 module.exports = router;
