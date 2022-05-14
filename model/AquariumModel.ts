@@ -1,6 +1,7 @@
 import {Model} from "sequelize";
 import UserDto from "../dto/UserDto";
 import BadRequestError from "../errors/BadRequestError";
+import TemperatureModel from "./TemperatureModel";
 
 export default class AquariumModel extends Model {
     id: string
@@ -11,7 +12,6 @@ export default class AquariumModel extends Model {
     salt: boolean
     imageUrl: string
     image: Blob
-    size: number
 
     static getAllOfUser(user: UserDto) {
         return AquariumModel.findAll({
@@ -46,6 +46,13 @@ export default class AquariumModel extends Model {
             } else {
                 throw e;
             }
+        })
+    }
+
+    async addTemperature(temperature: number) {
+        await TemperatureModel.create({
+            aquariumId: this.id,
+            temperature: temperature
         })
     }
 }
