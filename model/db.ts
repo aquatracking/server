@@ -2,6 +2,7 @@ import {DataTypes, Sequelize} from "sequelize";
 import UserModel from "./UserModel";
 import AquariumModel from "./AquariumModel";
 import TemperatureModel from "./TemperatureModel";
+import ApplicationModel from "./ApplicationModel";
 
 export default class Db {
     private static sequelize = null;
@@ -109,6 +110,34 @@ export default class Db {
                 }
             }
         }, {sequelize, tableName: 'temperatures'});
+
+        ApplicationModel.init({
+            id: {
+                type: DataTypes.UUID,
+                primaryKey: true,
+                defaultValue: DataTypes.UUIDV4
+            },
+            name: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            description: {
+                type: DataTypes.STRING,
+                defaultValue: '',
+            },
+            token: {
+                type: DataTypes.TEXT,
+                allowNull: false,
+            },
+            userId: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                references: {
+                    model: UserModel,
+                    key: 'id'
+                }
+            }
+        }, {sequelize, tableName: 'applications'});
 
         await sequelize.sync();
 

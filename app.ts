@@ -10,6 +10,7 @@ import jwt from 'jsonwebtoken';
 import Db from './model/db';
 import UserDto from "./dto/UserDto";
 import UserModel from "./model/UserModel";
+import ApplicationModel from "./model/ApplicationModel";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync('.env')) {
@@ -30,6 +31,7 @@ if (fs.existsSync('.env')) {
         MARIADB_DATABASE=aquatracking
         ACCESS_TOKEN_SECRET=
         REFRESH_TOKEN_SECRET=
+        APPLICATION_TOKEN_SECRET=
     `.replaceAll('    ', ''));
 
     console.log('Please complete .env file')
@@ -67,6 +69,9 @@ if (process.env.OPEN_WEATHER_API_KEY === undefined || process.env.OPEN_WEATHER_A
 } else if (process.env.REFRESH_TOKEN_SECRET === undefined || process.env.REFRESH_TOKEN_SECRET === '') {
     console.error('Environment variable REFRESH_TOKEN_SECRET is not defined.');
     process.exit(1);
+} else if (process.env.APPLICATION_TOKEN_SECRET === undefined || process.env.APPLICATION_TOKEN_SECRET === '') {
+    console.error('Environment variable APPLICATION_TOKEN_SECRET is not defined.');
+    process.exit(1);
 }
 
 // - - - - - Serveur Express - - - - - //
@@ -91,35 +96,66 @@ app.all('*', function (req, res, next) {
     if (req.path === '/users/login' || req.path === '/users') {
         next();
     } else {
-        jwt.verify(req.cookies.access_token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-            if (err) {
-                jwt.verify(req.cookies.refresh_token, process.env.REFRESH_TOKEN_SECRET, function (err, user) {
-                    if (err) {
-                        res.status(401).send();
-                    } else {
-                        UserModel.findByPk(user.id).then(function (user) {
-                            if (user) {
-                                res.cookie('access_token', UserTokenUtil.generateAccessToken(new UserDto(user)), {maxAge: 1000 * 60 * 30});
-                                req.user = new UserDto(user);
-                                next();
-                            } else {
-                                res.status(401).send();
-                            }
-                        }).catch(function (err) {
+        if(req.headers.application_token) {
+            jwt.verify(req.headers.application_token, process.env.APPLICATION_TOKEN_SECRET, function (err, decoded) {
+                if(err) {
+                    console.log(err);
+                    res.status(401).send({
+                        message: 'Invalid application token'
+                    });
+                } else {
+                    ApplicationModel.findOne({
+                        where: {
+                            token: req.headers.application_token
+                        }
+                    }).then(application => {
+                        if(application) {
+                            res.user = new UserDto(decoded.user);
+                            next();
+                        } else {
+                            res.status(401).send({
+                                message: 'Invalid application token'
+                            });
+                        }
+                    }).catch(err => {
+                        res.status(500).send({
+                            message: 'Internal server error'
+                        });
+                    })
+                }
+            });
+        } else {
+            jwt.verify(req.cookies.access_token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+                if (err) {
+                    jwt.verify(req.cookies.refresh_token, process.env.REFRESH_TOKEN_SECRET, function (err, user) {
+                        if (err) {
                             res.status(401).send();
-                        })
-                    }
-                });
-            } else {
-                req.user = new UserDto(decoded);
-                next();
-            }
-        });
+                        } else {
+                            UserModel.findByPk(user.id).then(function (user) {
+                                if (user) {
+                                    res.cookie('access_token', UserTokenUtil.generateAccessToken(new UserDto(user)), {maxAge: 1000 * 60 * 30});
+                                    req.user = new UserDto(user);
+                                    next();
+                                } else {
+                                    res.status(401).send();
+                                }
+                            }).catch(function (err) {
+                                res.status(401).send();
+                            })
+                        }
+                    });
+                } else {
+                    req.user = new UserDto(decoded);
+                    next();
+                }
+            });
+        }
     }
 });
 app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
 app.use('/aquariums', require('./routes/aquariums'));
+app.use('/applications', require('./routes/applications'));
 
 // - - - - - Database - - - - - //
 console.log('Connecting to database...');
