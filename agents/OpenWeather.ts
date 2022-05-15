@@ -1,5 +1,6 @@
 import axios from "axios";
 import WeatherType from "../type/WeatherType";
+import WeatherModel from "../model/WeatherModel";
 
 export default class OpenWeather {
     static fetch(): Promise<WeatherType> {
@@ -8,6 +9,20 @@ export default class OpenWeather {
             .catch(error => {
                 console.error(error);
                 return null;
+            });
+    }
+
+    static fetchAndSave(): Promise<WeatherModel> {
+        return this.fetch()
+            .then(weather => {
+                console.log(weather);
+                if (weather) {
+                    return WeatherModel.create({
+                        temperature: weather.main.temp,
+                        city: weather.name,
+                        measuredAt: new Date()
+                    });
+                }
             });
     }
 }

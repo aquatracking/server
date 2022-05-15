@@ -11,6 +11,7 @@ import Db from './model/db';
 import UserDto from "./dto/UserDto";
 import UserModel from "./model/UserModel";
 import ApplicationModel from "./model/ApplicationModel";
+import OpenWeather from "./agents/OpenWeather";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync('.env')) {
@@ -24,6 +25,7 @@ if (fs.existsSync('.env')) {
         OPEN_WEATHER_API_KEY=
         OPEN_WEATHER_LAT=
         OPEN_WEATHER_LON=
+        OPEN_WEATHER_AUTO_UPDATE_ACTIVATED=true
         MARIADB_HOST=localhost
         MARIADB_PORT=3306
         MARIADB_USER=root
@@ -156,19 +158,23 @@ app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
 app.use('/aquariums', require('./routes/aquariums'));
 app.use('/applications', require('./routes/applications'));
+app.use('/weather', require('./routes/weather'));
+
+// - - - - - Define auto agents - - - - - //
+async function autoGetWeather() {
+    console.log('Getting weather...');
+    await OpenWeather.fetchAndSave();
+    setTimeout(autoGetWeather, 300000 /* 5 minutes */);
+}
 
 // - - - - - Database - - - - - //
 console.log('Connecting to database...');
 Db.init().catch(err => {
     console.error(err);
     process.exit(1);
+}).then(async () => {
+    if(process.env.OPEN_WEATHER_AUTO_UPDATE_ACTIVATED && process.env.OPEN_WEATHER_AUTO_UPDATE_ACTIVATED == "true") await autoGetWeather();
 });
-
-// - - - - - Auto agents - - - - - //
-console.log('Starting agents...');
-/*OpenWeather.fetch().then(data => {
-    console.log(data);
-})*/
 
 // - - - - - Functions - - - - - //
 /**
