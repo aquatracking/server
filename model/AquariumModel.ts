@@ -35,7 +35,7 @@ export default class AquariumModel extends Model {
             userId: user.id,
             name: name,
             description: description,
-            creationDate: startedDate,
+            startedDate: startedDate,
             volume: volume,
             salt: salt,
             imageUrl: imageUrl,
