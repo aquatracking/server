@@ -136,6 +136,7 @@ app.all('*', function (req, res, next) {
                             UserModel.findByPk(user.id).then(function (user) {
                                 if (user) {
                                     res.cookie('access_token', UserTokenUtil.generateAccessToken(new UserDto(user)), {maxAge: 1000 * 60 * 30});
+                                    res.cookie('refresh_token', req.cookies.refresh_token, {maxAge: 1000 * 60 * 60 * 24 * 30});
                                     req.user = new UserDto(user);
                                     next();
                                 } else {
