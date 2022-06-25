@@ -4,6 +4,7 @@ import AquariumModel from "./AquariumModel";
 import TemperatureModel from "./TemperatureModel";
 import ApplicationModel from "./ApplicationModel";
 import WeatherModel from "./WeatherModel";
+import MeasurementModel from "./MeasurementModel";
 
 export default class Db {
     private static sequelize = null;
@@ -165,6 +166,35 @@ export default class Db {
                 allowNull: false,
             }
         }, {sequelize, tableName: 'weathers'});
+
+        MeasurementModel.init({
+            id: {
+                type: DataTypes.UUID,
+                primaryKey: true,
+                defaultValue: DataTypes.UUIDV4
+            },
+            type: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            value: {
+                type: DataTypes.DOUBLE,
+                allowNull: false,
+            },
+            measuredAt: {
+                type: DataTypes.DATE,
+                defaultValue: DataTypes.NOW,
+                allowNull: false,
+            },
+            aquariumId: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                references: {
+                    model: AquariumModel,
+                    key: 'id'
+                }
+            }
+        }, {sequelize, tableName: 'measurements'});
 
         await sequelize.sync();
 

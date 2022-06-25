@@ -2,6 +2,7 @@ import {Model} from "sequelize";
 import UserDto from "../dto/UserDto";
 import BadRequestError from "../errors/BadRequestError";
 import TemperatureModel from "./TemperatureModel";
+import MeasurementModel from "./MeasurementModel";
 
 export default class AquariumModel extends Model {
     id: string
@@ -53,6 +54,15 @@ export default class AquariumModel extends Model {
         await TemperatureModel.create({
             aquariumId: this.id,
             temperature: temperature,
+            measuredAt: (measuredAt) ? new Date(measuredAt) : new Date()
+        })
+    }
+
+    async addMeasurement(type: string, value: number, measuredAt: Date) {
+        await MeasurementModel.create({
+            aquariumId: this.id,
+            type: type,
+            value: value,
             measuredAt: (measuredAt) ? new Date(measuredAt) : new Date()
         })
     }

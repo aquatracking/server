@@ -5,6 +5,8 @@ import BadRequestError from "../errors/BadRequestError";
 import TemperatureModel from "../model/TemperatureModel";
 import TemperatureDto from "../dto/TemperatureDto";
 import {Op} from "sequelize";
+import MeasurementModel from "../model/MeasurementModel";
+import MeasurementDto from "../dto/MeasurementDto";
 
 const router = Router();
 
@@ -86,6 +88,44 @@ router.get('/:id/temperature', async function (req, res, next) {
     })
 
     return res.json(temperatureModels.map(temperatureModel => new TemperatureDto(temperatureModel)));
+})
+
+/* Set ph measurement of aquarium */
+router.post('/:id/ph', async function (req, res, next) {
+    if(!req.body.ph || !req.params.id) {
+        res.status(400).json();
+        return;
+    }
+
+    const aquarium = await AquariumModel.findOne({
+        where: {
+            id: req.params.id
+        }
+    })
+
+    if (!aquarium) {
+        res.status(404).json();
+    } else {
+        aquarium.addMeasurement('ph', req.body.ph, req.body.measuredAt).then(() => {
+            console.log(`PH of aquarium ${aquarium.id} added : ${req.body.ph}`);
+            res.json();
+        }).catch(err => {
+            console.log(err);
+            res.status(500).json();
+        })
+    }
+})
+
+/* Get ph measurements of aquarium */
+router.get('/:id/ph', async function (req, res, next) {
+    if(!req.params.id) {
+        res.status(400).json();
+        return;
+    }
+
+    const phMeasurements = await MeasurementModel.getAll(req.params.id, "PH", req.query.from, req.query.to);
+
+    return res.json(phMeasurements.map(phMeasurement => new MeasurementDto(phMeasurement)));
 })
 
 /* get all aquarium's measurements */
