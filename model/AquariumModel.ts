@@ -1,8 +1,8 @@
-import {Model} from "sequelize";
+import {Model, Op} from "sequelize";
 import UserDto from "../dto/UserDto";
 import BadRequestError from "../errors/BadRequestError";
-import TemperatureModel from "./TemperatureModel";
 import MeasurementModel from "./MeasurementModel";
+import MeasurementTypeModel from "./MeasurementTypeModel";
 
 export default class AquariumModel extends Model {
     id: string
@@ -22,16 +22,7 @@ export default class AquariumModel extends Model {
         })
     }
 
-    static createOne({
-                         user,
-                         name,
-                         description = "",
-                         startedDate,
-                         volume,
-                         salt = false,
-                         imageUrl = "",
-                         image
-                     }: { user: UserDto, name: string, description?: string, startedDate: Date, volume: number, salt?: boolean, imageUrl?: string, image: Blob}) {
+    static createOne({user, name, description = "", startedDate, volume, salt = false, imageUrl = "", image}: { user: UserDto, name: string, description?: string, startedDate: Date, volume: number, salt?: boolean, imageUrl?: string, image: Blob}) {
         return AquariumModel.create({
             userId: user.id,
             name: name,
@@ -50,20 +41,27 @@ export default class AquariumModel extends Model {
         })
     }
 
-    async addTemperature(temperature: number, measuredAt: Date) {
-        await TemperatureModel.create({
+    async addMeasurement(type: MeasurementTypeModel, value: number, measuredAt: Date) {
+        await MeasurementModel.create({
             aquariumId: this.id,
-            temperature: temperature,
-            measuredAt: (measuredAt) ? new Date(measuredAt) : new Date()
+            type: type.code,
+            value: value,
+            measuredAt: measuredAt
         })
     }
 
-    async addMeasurement(type: string, value: number, measuredAt: Date) {
-        await MeasurementModel.create({
-            aquariumId: this.id,
-            type: type,
-            value: value,
-            measuredAt: (measuredAt) ? new Date(measuredAt) : new Date()
+    async getMeasurements(type: MeasurementTypeModel, fromDate: Date = new Date((new Date()).getTime() - 24 * 60 * 60 * 1000), toDate: Date = new Date()) : Promise<MeasurementModel[]> {
+        return MeasurementModel.findAll({
+            where: {
+                aquariumId: this.id,
+                type: type.code,
+                measuredAt: {
+                    [Op.between]: [fromDate, toDate]
+                },
+            },
+            order: [
+                ['measuredAt', 'ASC']
+            ]
         })
     }
 }

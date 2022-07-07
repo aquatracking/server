@@ -1,27 +1,24 @@
-import Router from 'express';
-import AquariumModel from "../model/AquariumModel";
-import AquariumDto from "../dto/AquariumDto";
-import BadRequestError from "../errors/BadRequestError";
-import TemperatureModel from "../model/TemperatureModel";
-import TemperatureDto from "../dto/TemperatureDto";
-import {Op} from "sequelize";
-import MeasurementModel from "../model/MeasurementModel";
+import Router from 'express'
+import AquariumModel from "../model/AquariumModel"
+import AquariumDto from "../dto/AquariumDto"
+import BadRequestError from "../errors/BadRequestError"
+import MeasurementTypeModel from "../model/MeasurementTypeModel"
 import MeasurementDto from "../dto/MeasurementDto";
 
-const router = Router();
+const router = Router()
 
-/* GET aquariums listing. */
-router.get('/', function (req, res, next) {
+/** GET aquariums listing. */
+router.get('/', function (req, res) {
     AquariumModel.getAllOfUser(req.user).then(aquariums => {
-        res.json(aquariums.map(aquarium => new AquariumDto(aquarium)));
+        res.json(aquariums.map(aquarium => new AquariumDto(aquarium)))
     }).catch(err => {
-        console.error(err);
-        res.status(500).json();
-    });
-});
+        console.error(err)
+        res.status(500).json()
+    })
+})
 
-/* Post a new aquarium. */
-router.post('/', async function (req, res, next) {
+/** Post a new aquarium. */
+router.post('/', async function (req, res) {
     AquariumModel.createOne({
         user: req.user,
         name: req.body.name,
@@ -32,121 +29,117 @@ router.post('/', async function (req, res, next) {
         image: req.body.image,
         salt: req.body.salt,
     }).then(aquarium => {
-        res.json(new AquariumDto(aquarium));
+        res.json(new AquariumDto(aquarium))
     }).catch(err => {
-        console.log(err);
+        console.log(err)
         if (err instanceof BadRequestError) {
-            res.status(400).json();
+            res.status(400).json()
         } else {
-            res.status(500).json();
+            res.status(500).json()
         }
-    });
-});
+    })
+})
 
-/* Add temperature measurement of aquarium */
-router.post('/:id/temperature', async function (req, res, next) {
+/** @deprecated
+ *  Add temperature measurement of aquarium */
+router.post('/:id/temperature', async function (req, res) {
     if(!req.body.temperature || !req.params.id) {
-        res.status(400).json();
-        return;
+        res.status(400).json()
+        return
     }
 
-    const aquarium = await AquariumModel.findOne({
-        where: {
-            id: req.params.id
-        }
-    });
-    if (!aquarium) {
-        res.status(404).json();
-    } else {
-        aquarium.addTemperature(req.body.temperature, req.body.measuredAt).then(() => {
-            console.log(`Temperature of aquarium ${aquarium.id} added : ${req.body.temperature}`);
-            res.json();
-        }).catch(err => {
-            console.log(err);
-            res.status(500).json();
-        });
-    }
-});
+    // Get type
+    const type = MeasurementTypeModel.getByCode('TEMPERATURE')
 
-/* Get temperature measurements of aquarium */
-router.get('/:id/temperature', async function (req, res, next) {
-    if(!req.params.id) {
-        res.status(400).json();
-        return;
-    }
-
-    const temperatureModels = await TemperatureModel.findAll({
-        where: {
-            aquariumId: req.params.id,
-            measuredAt: {
-                [Op.between]: [req.query.from ? new Date(req.query.from) : new Date((new Date()).getTime() - 24 * 60 * 60 * 1000), req.query.to ? new Date(req.query.to) : new Date()]
-            }
-        },
-        order: [
-            ['measuredAt', 'DESC']
-        ]
-    })
-
-    return res.json(temperatureModels.map(temperatureModel => new TemperatureDto(temperatureModel)));
-})
-
-/* Set ph measurement of aquarium */
-router.post('/:id/ph', async function (req, res, next) {
-    if(!req.body.ph || !req.params.id) {
-        res.status(400).json();
-        return;
-    }
-
+    // Get aquarium
     const aquarium = await AquariumModel.findOne({
         where: {
             id: req.params.id
         }
     })
+    if(!aquarium) return res.status(404).json()
 
-    if (!aquarium) {
-        res.status(404).json();
-    } else {
-        aquarium.addMeasurement('ph', req.body.ph, req.body.measuredAt).then(() => {
-            console.log(`PH of aquarium ${aquarium.id} added : ${req.body.ph}`);
-            res.json();
-        }).catch(err => {
-            console.log(err);
-            res.status(500).json();
-        })
-    }
-})
+    // Get value
+    const value = req.body.temperature
 
-/* Get ph measurements of aquarium */
-router.get('/:id/ph', async function (req, res, next) {
-    if(!req.params.id) {
-        res.status(400).json();
-        return;
-    }
-
-    const phMeasurements = await MeasurementModel.getAll(req.params.id, "PH", req.query.from, req.query.to);
-
-    return res.json(phMeasurements.map(phMeasurement => new MeasurementDto(phMeasurement)));
-})
-
-/* get all aquarium's measurements */
-router.get('/:id/measurements', async function (req, res, next) {
-    if(!req.params.id) {
-        res.status(400).json();
-        return;
-    }
-
-    const temperatureModels = await TemperatureModel.findOne({
-        where: {
-            aquariumId: req.params.id
-        },
-        order: [
-            ['measuredAt', 'DESC']
-        ]
+    // Add measurement
+    aquarium.addMeasurement(type, value, new Date()).then(() => {
+        console.log(`Deprecated add of temperature of aquarium ${aquarium.id} : ${value}`)
+        res.json()
+    }).catch(err => {
+        console.log(err)
+        res.status(500).json()
     })
-
-    return res.json({
-        temperature: (temperatureModels) ? new TemperatureDto(temperatureModels) : null
-    });
 })
 
-module.exports = router;
+/** Get aquarium's measurement */
+router.get('/:id/measurements/:type', async function (req, res) {
+    if(!req.params.id || !req.params.type) {
+        res.status(400).json()
+        return
+    }
+
+    // Get type
+    const type = MeasurementTypeModel.getByCode(req.params.type)
+    if(!type) return res.status(404).json()
+
+    // Get aquarium
+    const aquarium = await AquariumModel.findOne({
+        where: {
+            id: req.params.id
+        }
+    })
+    if(!aquarium) return res.status(404).json()
+
+    // Get from and to dates
+    const fromDate = req.query.from ? new Date(req.query.from) : undefined
+    const toDate = req.query.to ? new Date(req.query.to) : undefined
+
+    // Get measurements
+    try {
+        const measurements = await aquarium.getMeasurements(type, fromDate, toDate)
+        console.log(`${measurements.length} measurements found`)
+        return res.json(measurements.map(measurement => new MeasurementDto(measurement)))
+    } catch(err) {
+        console.log(err)
+        return res.status(500).json()
+    }
+
+})
+
+/** Set aquarium's measurement */
+router.post('/:id/measurements/:type', async function (req, res) {
+    if(!req.body.value || !req.params.id || !req.params.type) {
+        res.status(400).json()
+        return
+    }
+
+    // Get type
+    const type = MeasurementTypeModel.getByCode(req.params.type)
+    if(!type) return res.status(404).json()
+
+    // Get aquarium
+    const aquarium = await AquariumModel.findOne({
+        where: {
+            id: req.params.id
+        }
+    })
+    if(!aquarium) return res.status(404).json()
+
+    // Get value
+    const value = req.body.value
+
+    // Get measuredAt
+    const measuredAt = (req.body.measuredAt) ? new Date(req.body.measuredAt) : new Date()
+
+    // Add measurement
+    aquarium.addMeasurement(type, value, measuredAt).then(() => {
+        console.log(`${type.name} of aquarium ${aquarium.id} added : ${value}`)
+        res.json()
+    }).catch(err => {
+        console.log(err)
+        res.status(500).json()
+    })
+})
+
+module.exports = router
