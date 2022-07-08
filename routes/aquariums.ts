@@ -98,13 +98,41 @@ router.get('/:id/measurements/:type', async function (req, res) {
     // Get measurements
     try {
         const measurements = await aquarium.getMeasurements(type, fromDate, toDate)
-        console.log(`${measurements.length} measurements found`)
         return res.json(measurements.map(measurement => new MeasurementDto(measurement)))
     } catch(err) {
         console.log(err)
         return res.status(500).json()
     }
 
+})
+
+/** Get last aquarium's measurement */
+router.get('/:id/measurements/:type/last', async function (req, res) {
+    if(!req.params.id || !req.params.type) {
+        res.status(400).json()
+        return
+    }
+
+    // Get type
+    const type = MeasurementTypeModel.getByCode(req.params.type)
+    if(!type) return res.status(404).json()
+
+    // Get aquarium
+    const aquarium = await AquariumModel.findOne({
+        where: {
+            id: req.params.id
+        }
+    })
+    if(!aquarium) return res.status(404).json()
+
+    // Get last measurement
+    try {
+        const measurement = await aquarium.getLastMeasurement(type)
+        return res.json(new MeasurementDto(measurement))
+    } catch(err) {
+        console.log(err)
+        return res.status(500).json()
+    }
 })
 
 /** Set aquarium's measurement */

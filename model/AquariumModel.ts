@@ -64,4 +64,16 @@ export default class AquariumModel extends Model {
             ]
         })
     }
+
+    async getLastMeasurement(type: MeasurementTypeModel) : Promise<MeasurementModel> {
+        return MeasurementModel.findOne({
+            where: {
+                aquariumId: this.id,
+                type: type.code,
+            },
+            order: [
+                ['measuredAt', 'DESC']
+            ]
+        })
+    }
 }
