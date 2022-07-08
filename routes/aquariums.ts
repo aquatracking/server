@@ -40,6 +40,24 @@ router.post('/', async function (req, res) {
     })
 })
 
+/** PATCH an aquarium. */
+router.patch('/:id', async function (req, res) {
+    AquariumModel.updateOne(req.params.id, {
+        name: req.body.name,
+        description: req.body.description,
+        image: req.body.image,
+    }).then(() => {
+        res.json()
+    }).catch(err => {
+        console.log(err)
+        if (err instanceof BadRequestError) {
+            res.status(400).json()
+        } else {
+            res.status(500).json()
+        }
+    })
+})
+
 /** @deprecated
  *  Add temperature measurement of aquarium */
 router.post('/:id/temperature', async function (req, res) {

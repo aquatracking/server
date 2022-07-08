@@ -41,6 +41,18 @@ export default class AquariumModel extends Model {
         })
     }
 
+    static updateOne(id: string, {name, description, image}: { name: string, description?: string, image: Blob}) {
+        return AquariumModel.update({
+            name: name,
+            description: description,
+            image: image
+        }, {
+            where: {
+                id: id
+            }
+        })
+    }
+
     async addMeasurement(type: MeasurementTypeModel, value: number, measuredAt: Date) {
         await MeasurementModel.create({
             aquariumId: this.id,
