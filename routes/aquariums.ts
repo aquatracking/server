@@ -4,6 +4,8 @@ import AquariumDto from "../dto/AquariumDto"
 import BadRequestError from "../errors/BadRequestError"
 import MeasurementTypeModel from "../model/MeasurementTypeModel"
 import MeasurementDto from "../dto/MeasurementDto";
+import MeasurementSettingDto from "../dto/MeasurementSettingDto";
+import MeasurementSettingModel from "../model/MeasurementSettingModel";
 
 const router = Router()
 
@@ -181,6 +183,61 @@ router.post('/:id/measurements/:type', async function (req, res) {
     // Add measurement
     aquarium.addMeasurement(type, value, measuredAt).then(() => {
         console.log(`${type.name} of aquarium ${aquarium.id} added : ${value}`)
+        res.json()
+    }).catch(err => {
+        console.log(err)
+        res.status(500).json()
+    })
+})
+
+/** Get aquarium's measurements settings */
+router.get('/:id/measurements', async function (req, res) {
+    if(!req.params.id) {
+        res.status(400).json()
+        return
+    }
+
+    // Get aquarium
+    const aquarium = await AquariumModel.findOne({
+        where: {
+            id: req.params.id
+        }
+    })
+    if(!aquarium) return res.status(404).json()
+
+    // Get settings
+    const settings = await aquarium.getMeasurementsSettings()
+    return res.json(settings.map(setting => new MeasurementSettingDto(setting)))
+})
+
+/** Set aquarium's measurements settings */
+router.patch('/:id/measurements', async function (req, res) {
+    if(!req.params.id || !req.body.settings || !Array.isArray(req.body.settings) || req.body.settings.length === 0) {
+        res.status(400).json()
+        return
+    }
+
+    // Get aquarium
+    const aquarium = await AquariumModel.findOne({
+        where: {
+            id: req.params.id
+        }
+    })
+    if(!aquarium) return res.status(404).json()
+
+    // Get settings
+    let settings = req.body.settings
+    if(!settings) return res.status(400).json()
+
+    try {
+        settings = settings.map(setting => MeasurementSettingModel.fromDto(setting))
+    } catch (err) {
+        console.log(err)
+        return res.status(400).json()
+    }
+
+    // Set settings
+    aquarium.setMeasurementsSettings(settings).then(() => {
         res.json()
     }).catch(err => {
         console.log(err)

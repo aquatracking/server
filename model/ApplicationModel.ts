@@ -1,5 +1,4 @@
 import {Model} from "sequelize";
-import jwt from "jsonwebtoken";
 import BadRequestError from "../errors/BadRequestError";
 
 export default class ApplicationModel extends Model {

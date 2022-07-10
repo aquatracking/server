@@ -3,6 +3,7 @@ import UserDto from "../dto/UserDto";
 import BadRequestError from "../errors/BadRequestError";
 import MeasurementModel from "./MeasurementModel";
 import MeasurementTypeModel from "./MeasurementTypeModel";
+import MeasurementSettingModel from "./MeasurementSettingModel";
 
 export default class AquariumModel extends Model {
     id: string
@@ -87,5 +88,63 @@ export default class AquariumModel extends Model {
                 ['measuredAt', 'DESC']
             ]
         })
+    }
+
+    async getMeasurementsSettings() : Promise<MeasurementSettingModel[]> {
+        let settings = await MeasurementSettingModel.findAll({
+            where: {
+                aquariumId: this.id
+            }
+        })
+
+        if(settings.map(setting => setting.type).sort().join('') != MeasurementTypeModel.getAll().map(type => type.code).sort().join('')) {
+            let order = 0
+            if(settings.length > 0) {
+                order = Math.max(...settings.map(setting => setting.order)) + 1
+            }
+            for(let type of MeasurementTypeModel.getAll()) {
+                let setting = await MeasurementSettingModel.findOne({
+                    where: {
+                        aquariumId: this.id,
+                        type: type.code
+                    }
+                })
+                if(!setting) {
+                    await MeasurementSettingModel.create({
+                        aquariumId: this.id,
+                        type: type.code,
+                        order: order
+                    })
+                    order++
+                }
+            }
+            settings = await MeasurementSettingModel.findAll({
+                where: {
+                    aquariumId: this.id
+                }
+            })
+        }
+
+        let codeList = MeasurementTypeModel.getAll().map(type => type.code)
+
+        return settings.filter(setting => codeList.includes(setting.type))
+    }
+
+    async setMeasurementsSettings(settings: MeasurementSettingModel[]) {
+        for(let setting of settings) {
+            await MeasurementSettingModel.update({
+                visible: setting.visible,
+                order: setting.order,
+                defaultMode: setting.defaultMode,
+                minValue: setting.minValue,
+                maxValue: setting.maxValue,
+                mailAlert: setting.mailAlert,
+                notificationAlert: setting.notificationAlert
+            }, {
+                where: {
+                    id: setting.id
+                }
+            })
+        }
     }
 }

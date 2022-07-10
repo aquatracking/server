@@ -4,6 +4,7 @@ import AquariumModel from "./AquariumModel";
 import ApplicationModel from "./ApplicationModel";
 import WeatherModel from "./WeatherModel";
 import MeasurementModel from "./MeasurementModel";
+import MeasurementSettingModel from "./MeasurementSettingModel";
 
 export default class Db {
     private static sequelize = null;
@@ -169,6 +170,59 @@ export default class Db {
                 }
             }
         }, {sequelize, tableName: 'measurements'});
+
+        MeasurementSettingModel.init({
+            id: {
+                type: DataTypes.UUID,
+                primaryKey: true,
+                defaultValue: DataTypes.UUIDV4
+            },
+            aquariumId: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                references: {
+                    model: AquariumModel,
+                    key: 'id'
+                }
+            },
+            type: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            visible: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
+            },
+            order: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0
+            },
+            defaultMode: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 3
+            },
+            minValue: {
+                type: DataTypes.DOUBLE,
+                allowNull: true,
+            },
+            maxValue: {
+                type: DataTypes.DOUBLE,
+                allowNull: true,
+            },
+            mailAlert: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
+            },
+            notificationAlert: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
+            }
+        }, {sequelize, tableName: 'aquarium_measurement_settings'});
 
         await sequelize.sync();
 
