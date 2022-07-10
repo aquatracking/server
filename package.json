@@ -16,6 +16,7 @@
     "jsonwebtoken": "^8.5.1",
     "morgan": "~1.9.1",
     "mysql2": "^2.3.3",
+    "nodemailer": "^6.7.7",
     "sequelize": "^6.19.0",
     "sharp": "^0.30.4",
     "ts-node": "^10.7.0",

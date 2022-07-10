@@ -34,6 +34,11 @@ if (fs.existsSync('.env')) {
         ACCESS_TOKEN_SECRET=
         REFRESH_TOKEN_SECRET=
         APPLICATION_TOKEN_SECRET=
+        MAIL_HOST=
+        MAIL_PORT=
+        MAIL_USER=
+        MAIL_PASS=
+        REGISTRATION_ENABLED=false
     `.replaceAll('    ', ''));
 
     console.log('Please complete .env file')
@@ -41,40 +46,73 @@ if (fs.existsSync('.env')) {
     process.exit(1);
 }
 
+let envNotCompleted = false;
 if (process.env.OPEN_WEATHER_API_KEY === undefined || process.env.OPEN_WEATHER_API_KEY === '') {
     console.error('Environment variable OPEN_WEATHER_API_KEY is not defined.');
-    process.exit(1);
-} else if (process.env.OPEN_WEATHER_LAT === undefined || process.env.OPEN_WEATHER_LAT === '') {
-    console.error('Environment variable OPEN_WEATHER_LAT is not defined.');
-    process.exit(1);
-} else if (process.env.OPEN_WEATHER_LON === undefined || process.env.OPEN_WEATHER_LON === '') {
-    console.error('Environment variable OPEN_WEATHER_LON is not defined.');
-    process.exit(1);
-} else if (process.env.MARIADB_HOST === undefined || process.env.MARIADB_HOST === '') {
-    console.error('Environment variable MARIADB_HOST is not defined.');
-    process.exit(1);
-} else if (process.env.MARIADB_PORT === undefined || process.env.MARIADB_PORT === '') {
-    console.error('Environment variable MARIADB_PORT is not defined.');
-    process.exit(1);
-} else if (process.env.MARIADB_USER === undefined || process.env.MARIADB_USER === '') {
-    console.error('Environment variable MARIADB_USER is not defined.');
-    process.exit(1);
-} else if (process.env.MARIADB_PASSWORD === undefined || process.env.MARIADB_PASSWORD === '') {
-    console.error('Environment variable MARIADB_PASSWORD is not defined.');
-    process.exit(1);
-} else if (process.env.MARIADB_DATABASE === undefined || process.env.MARIADB_DATABASE === '') {
-    console.error('Environment variable MARIADB_DATABASE is not defined.');
-    process.exit(1);
-} else if (process.env.ACCESS_TOKEN_SECRET === undefined || process.env.ACCESS_TOKEN_SECRET === '') {
-    console.error('Environment variable ACCESS_TOKEN_SECRET is not defined.');
-    process.exit(1);
-} else if (process.env.REFRESH_TOKEN_SECRET === undefined || process.env.REFRESH_TOKEN_SECRET === '') {
-    console.error('Environment variable REFRESH_TOKEN_SECRET is not defined.');
-    process.exit(1);
-} else if (process.env.APPLICATION_TOKEN_SECRET === undefined || process.env.APPLICATION_TOKEN_SECRET === '') {
-    console.error('Environment variable APPLICATION_TOKEN_SECRET is not defined.');
-    process.exit(1);
+    envNotCompleted = true;
 }
+if (process.env.OPEN_WEATHER_LAT === undefined || process.env.OPEN_WEATHER_LAT === '') {
+    console.error('Environment variable OPEN_WEATHER_LAT is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.OPEN_WEATHER_LON === undefined || process.env.OPEN_WEATHER_LON === '') {
+    console.error('Environment variable OPEN_WEATHER_LON is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.MARIADB_HOST === undefined || process.env.MARIADB_HOST === '') {
+    console.error('Environment variable MARIADB_HOST is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.MARIADB_PORT === undefined || process.env.MARIADB_PORT === '') {
+    console.error('Environment variable MARIADB_PORT is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.MARIADB_USER === undefined || process.env.MARIADB_USER === '') {
+    console.error('Environment variable MARIADB_USER is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.MARIADB_PASSWORD === undefined || process.env.MARIADB_PASSWORD === '') {
+    console.error('Environment variable MARIADB_PASSWORD is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.MARIADB_DATABASE === undefined || process.env.MARIADB_DATABASE === '') {
+    console.error('Environment variable MARIADB_DATABASE is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.ACCESS_TOKEN_SECRET === undefined || process.env.ACCESS_TOKEN_SECRET === '') {
+    console.error('Environment variable ACCESS_TOKEN_SECRET is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.REFRESH_TOKEN_SECRET === undefined || process.env.REFRESH_TOKEN_SECRET === '') {
+    console.error('Environment variable REFRESH_TOKEN_SECRET is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.APPLICATION_TOKEN_SECRET === undefined || process.env.APPLICATION_TOKEN_SECRET === '') {
+    console.error('Environment variable APPLICATION_TOKEN_SECRET is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.MAIL_HOST === undefined || process.env.MAIL_HOST === '') {
+    console.error('Environment variable MAIL_HOST is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.MAIL_PORT === undefined || process.env.MAIL_PORT === '') {
+    console.error('Environment variable MAIL_PORT is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.MAIL_USER === undefined || process.env.MAIL_USER === '') {
+    console.error('Environment variable MAIL_USER is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.MAIL_PASS === undefined || process.env.MAIL_PASS === '') {
+    console.error('Environment variable MAIL_PASS is not defined.');
+    envNotCompleted = true;
+}
+if (process.env.REGISTRATION_ENABLED === undefined || process.env.REGISTRATION_ENABLED === '') {
+    console.error('Environment variable REGISTRATION_ENABLED is not defined.');
+    envNotCompleted = true;
+}
+
+if(envNotCompleted) process.exit(1);
 
 // - - - - - Serveur Express - - - - - //
 console.log('Starting server...');
