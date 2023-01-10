@@ -11,7 +11,6 @@ import Db from './model/db';
 import UserDto from "./dto/UserDto";
 import UserModel from "./model/UserModel";
 import ApplicationModel from "./model/ApplicationModel";
-import OpenWeather from "./agents/OpenWeather";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync('.env')) {
@@ -22,10 +21,6 @@ if (fs.existsSync('.env')) {
 
     fs.writeFileSync('.env', `
         PORT=3000
-        OPEN_WEATHER_API_KEY=
-        OPEN_WEATHER_LAT=
-        OPEN_WEATHER_LON=
-        OPEN_WEATHER_AUTO_UPDATE_ACTIVATED=true
         MARIADB_HOST=localhost
         MARIADB_PORT=3306
         MARIADB_USER=root
@@ -47,18 +42,6 @@ if (fs.existsSync('.env')) {
 }
 
 let envNotCompleted = false;
-if (process.env.OPEN_WEATHER_API_KEY === undefined || process.env.OPEN_WEATHER_API_KEY === '') {
-    console.error('Environment variable OPEN_WEATHER_API_KEY is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.OPEN_WEATHER_LAT === undefined || process.env.OPEN_WEATHER_LAT === '') {
-    console.error('Environment variable OPEN_WEATHER_LAT is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.OPEN_WEATHER_LON === undefined || process.env.OPEN_WEATHER_LON === '') {
-    console.error('Environment variable OPEN_WEATHER_LON is not defined.');
-    envNotCompleted = true;
-}
 if (process.env.MARIADB_HOST === undefined || process.env.MARIADB_HOST === '') {
     console.error('Environment variable MARIADB_HOST is not defined.');
     envNotCompleted = true;
@@ -197,14 +180,6 @@ app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
 app.use('/aquariums', require('./routes/aquariums'));
 app.use('/applications', require('./routes/applications'));
-app.use('/weather', require('./routes/weather'));
-
-// - - - - - Define auto agents - - - - - //
-async function autoGetWeather() {
-    console.log('Getting weather...');
-    await OpenWeather.fetchAndSave();
-    setTimeout(autoGetWeather, 300000 /* 5 minutes */);
-}
 
 // - - - - - Database - - - - - //
 console.log('Connecting to database...');
@@ -212,7 +187,7 @@ Db.init().catch(err => {
     console.error(err);
     process.exit(1);
 }).then(async () => {
-    if(process.env.OPEN_WEATHER_AUTO_UPDATE_ACTIVATED && process.env.OPEN_WEATHER_AUTO_UPDATE_ACTIVATED == "true") await autoGetWeather();
+    console.log('Database connected.');
 });
 
 // - - - - - Functions - - - - - //

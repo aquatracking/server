@@ -2,7 +2,6 @@ import {DataTypes, Sequelize} from "sequelize";
 import UserModel from "./UserModel";
 import AquariumModel from "./AquariumModel";
 import ApplicationModel from "./ApplicationModel";
-import WeatherModel from "./WeatherModel";
 import MeasurementModel from "./MeasurementModel";
 import MeasurementSettingModel from "./MeasurementSettingModel";
 
@@ -120,27 +119,6 @@ export default class Db {
                 }
             }
         }, {sequelize, tableName: 'applications'});
-
-        WeatherModel.init({
-            id: {
-                type: DataTypes.UUID,
-                primaryKey: true,
-                defaultValue: DataTypes.UUIDV4
-            },
-            temperature: {
-                type: DataTypes.DOUBLE,
-                allowNull: false,
-            },
-            city: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-            measuredAt: {
-                type: DataTypes.DATE,
-                defaultValue: DataTypes.NOW,
-                allowNull: false,
-            }
-        }, {sequelize, tableName: 'weathers'});
 
         MeasurementModel.init({
             id: {
