@@ -245,4 +245,34 @@ router.patch('/:id/measurements', async function (req, res) {
     })
 })
 
+/** Archive aquarium */
+router.put('/:id/archive', async function (req, res) {
+    if(!req.params.id) {
+        res.status(400).json()
+        return
+    }
+
+    AquariumModel.archiveOne(req.params.id).then(() => {
+        res.json()
+    }).catch(err => {
+        console.log(err)
+        res.status(500).json()
+    })
+})
+
+/** Unarchive aquarium */
+router.put('/:id/unarchive', async function (req, res) {
+    if(!req.params.id) {
+        res.status(400).json()
+        return
+    }
+
+    AquariumModel.unarchiveOne(req.params.id).then(() => {
+        res.json()
+    }).catch(err => {
+        console.log(err)
+        res.status(500).json()
+    })
+})
+
 module.exports = router

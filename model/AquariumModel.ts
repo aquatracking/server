@@ -15,6 +15,7 @@ export default class AquariumModel extends Model {
     salt: boolean
     imageUrl: string
     image: Blob
+    archivedDate: Date
 
     static notificationCooldown = 1000 * 60 * 60 * 24 // 24h
     static notificationCooldownHistory: Array<{aquariumId: string, typeCode: string, expire: Date}> = []
@@ -22,7 +23,8 @@ export default class AquariumModel extends Model {
     static getAllOfUser(user: UserDto) {
         return AquariumModel.findAll({
             where: {
-                userId: user.id
+                userId: user.id,
+                archivedDate: null
             }
         })
     }
@@ -193,5 +195,25 @@ export default class AquariumModel extends Model {
                 }
             })
         }
+    }
+
+    static archiveOne(id: string) {
+        return AquariumModel.update({
+            archivedDate: new Date()
+        }, {
+            where: {
+                id: id
+            }
+        })
+    }
+
+    static unarchiveOne(id: string) {
+        return AquariumModel.update({
+            archivedDate: null
+        }, {
+            where: {
+                id: id
+            }
+        })
     }
 }

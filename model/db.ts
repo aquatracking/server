@@ -89,6 +89,10 @@ export default class Db {
                     model: UserModel,
                     key: 'id'
                 }
+            },
+            archivedDate: {
+                type: DataTypes.DATE,
+                allowNull: true,
             }
         }, {sequelize, tableName: 'aquariums'});
 
