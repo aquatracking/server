@@ -20,6 +20,15 @@ export default class AquariumModel extends Model {
     static notificationCooldown = 1000 * 60 * 60 * 24 // 24h
     static notificationCooldownHistory: Array<{aquariumId: string, typeCode: string, expire: Date}> = []
 
+    static async getOneOfUser(id: string, user: UserModel) {
+        return AquariumModel.findOne({
+            where: {
+                id: id,
+                userId: user.id,
+            }
+        })
+    }
+
     static getAllOfUser(user: UserDto) {
         return AquariumModel.findAll({
             where: {
@@ -48,14 +57,14 @@ export default class AquariumModel extends Model {
         })
     }
 
-    static updateOne(id: string, {name, description, image}: { name: string, description?: string, image: Blob}) {
+    async updateOne({name, description, image}: { name: string, description?: string, image: Blob}) {
         return AquariumModel.update({
             name: name,
             description: description,
             image: image
         }, {
             where: {
-                id: id
+                id: this.id
             }
         })
     }
@@ -197,22 +206,22 @@ export default class AquariumModel extends Model {
         }
     }
 
-    static archiveOne(id: string) {
+    async archiveOne() {
         return AquariumModel.update({
             archivedDate: new Date()
         }, {
             where: {
-                id: id
+                id: this.id
             }
         })
     }
 
-    static unarchiveOne(id: string) {
+    async unarchiveOne() {
         return AquariumModel.update({
             archivedDate: null
         }, {
             where: {
-                id: id
+                id: this.id
             }
         })
     }
