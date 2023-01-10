@@ -224,6 +224,9 @@ export default class Db {
             }
         }, {sequelize, tableName: 'aquarium_measurement_settings'});
 
+        UserModel.hasMany(AquariumModel, {foreignKey: 'userId'});
+        AquariumModel.belongsTo(UserModel, {foreignKey: 'userId'});
+
         await sequelize.sync();
 
         console.log('Database initialized');
