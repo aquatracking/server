@@ -31,7 +31,7 @@ router.get('/:id/image', async function (req, res) {
         return
     })
 
-    res.send(image)
+    res.json(image)
 })
 
 /** Post a new aquarium. */
