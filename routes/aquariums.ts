@@ -44,7 +44,18 @@ router.post('/', async function (req, res) {
 
 /** PATCH an aquarium. */
 router.patch('/:id', async function (req, res) {
-    AquariumModel.updateOne(req.params.id, {
+    if(!req.params.id) {
+        res.status(400).json()
+        return
+    }
+
+    let aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user)
+    if(!aquarium) {
+        res.status(404).json()
+        return
+    }
+
+    aquarium.updateOne({
         name: req.body.name,
         description: req.body.description,
         image: req.body.image,
@@ -72,11 +83,7 @@ router.post('/:id/temperature', async function (req, res) {
     const type = MeasurementTypeModel.getByCode('TEMPERATURE')
 
     // Get aquarium
-    const aquarium = await AquariumModel.findOne({
-        where: {
-            id: req.params.id
-        }
-    })
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user)
     if(!aquarium) return res.status(404).json()
 
     // Get value
@@ -104,11 +111,7 @@ router.get('/:id/measurements/:type', async function (req, res) {
     if(!type) return res.status(404).json()
 
     // Get aquarium
-    const aquarium = await AquariumModel.findOne({
-        where: {
-            id: req.params.id
-        }
-    })
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user)
     if(!aquarium) return res.status(404).json()
 
     // Get from and to dates
@@ -138,17 +141,13 @@ router.get('/:id/measurements/:type/last', async function (req, res) {
     if(!type) return res.status(404).json()
 
     // Get aquarium
-    const aquarium = await AquariumModel.findOne({
-        where: {
-            id: req.params.id
-        }
-    })
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user)
     if(!aquarium) return res.status(404).json()
 
     // Get last measurement
     try {
         const measurement = await aquarium.getLastMeasurement(type)
-        return res.json(new MeasurementDto(measurement))
+        return res.json((measurement != null) ? new MeasurementDto(measurement) : null)
     } catch(err) {
         console.log(err)
         return res.status(500).json()
@@ -167,11 +166,7 @@ router.post('/:id/measurements/:type', async function (req, res) {
     if(!type) return res.status(404).json()
 
     // Get aquarium
-    const aquarium = await AquariumModel.findOne({
-        where: {
-            id: req.params.id
-        }
-    })
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user)
     if(!aquarium) return res.status(404).json()
 
     // Get value
@@ -198,11 +193,7 @@ router.get('/:id/measurements', async function (req, res) {
     }
 
     // Get aquarium
-    const aquarium = await AquariumModel.findOne({
-        where: {
-            id: req.params.id
-        }
-    })
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user)
     if(!aquarium) return res.status(404).json()
 
     // Get settings
@@ -218,11 +209,7 @@ router.patch('/:id/measurements', async function (req, res) {
     }
 
     // Get aquarium
-    const aquarium = await AquariumModel.findOne({
-        where: {
-            id: req.params.id
-        }
-    })
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user)
     if(!aquarium) return res.status(404).json()
 
     // Get settings
@@ -238,6 +225,42 @@ router.patch('/:id/measurements', async function (req, res) {
 
     // Set settings
     aquarium.setMeasurementsSettings(settings).then(() => {
+        res.json()
+    }).catch(err => {
+        console.log(err)
+        res.status(500).json()
+    })
+})
+
+/** Archive aquarium */
+router.put('/:id/archive', async function (req, res) {
+    if(!req.params.id) {
+        res.status(400).json()
+        return
+    }
+
+    let aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user)
+    if(!aquarium) return res.status(404).json()
+
+    aquarium.archiveOne().then(() => {
+        res.json()
+    }).catch(err => {
+        console.log(err)
+        res.status(500).json()
+    })
+})
+
+/** Unarchive aquarium */
+router.put('/:id/unarchive', async function (req, res) {
+    if(!req.params.id) {
+        res.status(400).json()
+        return
+    }
+
+    let aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user)
+    if(!aquarium) return res.status(404).json()
+
+    aquarium.unarchiveOne().then(() => {
         res.json()
     }).catch(err => {
         console.log(err)
