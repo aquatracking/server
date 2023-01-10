@@ -6,6 +6,7 @@ import MeasurementTypeModel from "./MeasurementTypeModel";
 import MeasurementSettingModel from "./MeasurementSettingModel";
 import MailSender from "../agents/MailSender";
 import UserModel from "./UserModel";
+import NotFoundError from "../errors/NotFoundError";
 export default class AquariumModel extends Model {
     id: string
     name: string
@@ -13,8 +14,6 @@ export default class AquariumModel extends Model {
     startedDate: Date
     volume: number
     salt: boolean
-    imageUrl: string
-    image: Blob
     archivedDate: Date
 
     static notificationCooldown = 1000 * 60 * 60 * 24 // 24h
@@ -55,6 +54,33 @@ export default class AquariumModel extends Model {
                 throw e;
             }
         })
+    }
+
+    async getImage() {
+        let aquarium = AquariumModel.findOne({
+            where: {
+                id: this.id
+            },
+            attributes: ['image']
+        })
+    }
+
+    static async getImageForOneAquariumOfUser(id: string, user: UserDto) {
+        let aquarium = await AquariumModel.findOne(
+            {
+                where: {
+                    id: id,
+                    userId: user.id
+                },
+                attributes: ['image']
+            }
+        )
+
+        if(!aquarium) {
+            throw new NotFoundError()
+        }
+
+        return aquarium.getDataValue('image')
     }
 
     async updateOne({name, description, image}: { name: string, description?: string, image: Blob}) {

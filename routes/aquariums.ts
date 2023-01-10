@@ -19,6 +19,21 @@ router.get('/', function (req, res) {
     })
 })
 
+/** GET aquarium image. */
+router.get('/:id/image', async function (req, res) {
+    if(!req.params.id) {
+        res.status(400).json()
+        return
+    }
+
+    let image = await AquariumModel.getImageForOneAquariumOfUser(req.params.id, req.user).catch(() => {
+        res.status(404).json()
+        return
+    })
+
+    res.json(image)
+})
+
 /** Post a new aquarium. */
 router.post('/', async function (req, res) {
     AquariumModel.createOne({

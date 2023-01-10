@@ -134,7 +134,7 @@ app.all('*', function (req, res, next) {
                         }
                     }).then(application => {
                         if(application) {
-                            res.user = new UserDto(decoded.user);
+                            req.user = new UserDto(decoded.user);
                             next();
                         } else {
                             res.status(401).send({

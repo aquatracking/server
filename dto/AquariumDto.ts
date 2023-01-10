@@ -7,8 +7,6 @@ export default class AquariumDto {
     startedDate: Date
     volume: number
     salt: boolean
-    imageUrl: string
-    image: Blob
     archivedDate: Date
 
     constructor(aquariumModel: AquariumModel) {
@@ -18,8 +16,6 @@ export default class AquariumDto {
         this.startedDate = aquariumModel.startedDate
         this.volume = aquariumModel.volume
         this.salt = aquariumModel.salt
-        this.imageUrl = aquariumModel.imageUrl
-        this.image = aquariumModel.image
         this.archivedDate = aquariumModel.archivedDate
     }
 }
