@@ -104,6 +104,7 @@ const app = express();
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb' ,extended: false}));
 app.use(cookieParser());
+app.set('trust proxy', 1);
 
 const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
