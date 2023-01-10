@@ -148,7 +148,7 @@ router.get('/:id/measurements/:type/last', async function (req, res) {
     // Get last measurement
     try {
         const measurement = await aquarium.getLastMeasurement(type)
-        return res.json(new MeasurementDto(measurement))
+        return res.json((measurement != null) ? new MeasurementDto(measurement) : null)
     } catch(err) {
         console.log(err)
         return res.status(500).json()
