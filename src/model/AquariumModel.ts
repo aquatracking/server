@@ -7,6 +7,7 @@ import MeasurementSettingModel from "./MeasurementSettingModel";
 import MailSender from "../agents/MailSender";
 import UserModel from "./UserModel";
 import NotFoundError from "../errors/NotFoundError";
+
 export default class AquariumModel extends Model {
     id: string
     name: string
@@ -19,7 +20,7 @@ export default class AquariumModel extends Model {
     static notificationCooldown = 1000 * 60 * 60 * 24 // 24h
     static notificationCooldownHistory: Array<{aquariumId: string, typeCode: string, expire: Date}> = []
 
-    static async getOneOfUser(id: string, user: UserModel) {
+    static async getOneOfUser(id: string, user: UserModel | UserDto) {
         return AquariumModel.findOne({
             where: {
                 id: id,
