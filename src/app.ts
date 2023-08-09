@@ -1,7 +1,7 @@
 import UserTokenUtil from "./utils/UserTokenUtil";
 
-const express = require('express');
-const http = require('http');
+import express from 'express';
+import http from 'http';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 import cookieParser from 'cookie-parser';
@@ -120,8 +120,9 @@ app.all('*', function (req, res, next) {
     if (req.path === '/users/login' || req.path === '/users') {
         next();
     } else {
-        if(req.headers.application_token) {
-            jwt.verify(req.headers.application_token, process.env.APPLICATION_TOKEN_SECRET, function (err, decoded) {
+        const { application_token} = req.headers;
+        if(application_token && typeof application_token === "string") {
+            jwt.verify(application_token, process.env.APPLICATION_TOKEN_SECRET, function (err, decoded) {
                 if(err) {
                     console.log(err);
                     res.status(401).send({
@@ -133,7 +134,9 @@ app.all('*', function (req, res, next) {
                             token: req.headers.application_token
                         }
                     }).then(application => {
-                        if(application) {
+                        // decoded cannot be a string since the
+                        // token is generated from an object
+                        if(application && typeof decoded !== "string") {
                             req.user = new UserDto(decoded.user);
                             next();
                         } else {
