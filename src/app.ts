@@ -29,10 +29,11 @@ if (fs.existsSync('.env')) {
         ACCESS_TOKEN_SECRET=
         REFRESH_TOKEN_SECRET=
         APPLICATION_TOKEN_SECRET=
-        MAIL_HOST=
-        MAIL_PORT=
-        MAIL_USER=
-        MAIL_PASS=
+        MAIL_HOST=localhost
+        MAIL_PORT=25
+        MAIL_USER=mail@exemple.fr
+        MAIL_PASS=password
+        MAIL_SSL=false
         REGISTRATION_ENABLED=false
     `.replaceAll('    ', ''));
 

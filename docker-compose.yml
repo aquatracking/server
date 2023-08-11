@@ -17,3 +17,8 @@ services:
       - "8082:80"
     environment:
       - PMA_ARBITRARY=1
+  maildev:
+    image: maildev/maildev
+    ports:
+      - "1080:1080"
+      - "25:1025"
