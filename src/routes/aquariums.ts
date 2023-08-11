@@ -130,8 +130,9 @@ router.get('/:id/measurements/:type', async function (req, res) {
     if(!aquarium) return res.status(404).json()
 
     // Get from and to dates
-    const fromDate = req.query.from ? new Date(req.query.from) : undefined
-    const toDate = req.query.to ? new Date(req.query.to) : undefined
+    const { from, to } = req.query
+    const fromDate = typeof from === "string" ? new Date(from) : undefined
+    const toDate = typeof to === "string" ? new Date(to) : undefined
 
     // Get measurements
     try {
