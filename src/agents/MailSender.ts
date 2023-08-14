@@ -1,20 +1,21 @@
 import * as nodemailer from 'nodemailer';
 import UserModel from "../model/UserModel";
+import { env } from '../env';
 
 export default class MailSender {
     static send(to: string, subject: string, text: string) {
         let transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST,
-            port: Number(process.env.MAIL_PORT),
-            secure: process.env.MAIL_SSL == "true",
+            host: env.MAIL_HOST,
+            port: Number(env.MAIL_PORT),
+            secure: env.MAIL_SSL,
             auth: {
-                user: process.env.MAIL_USER,
-                pass: process.env.MAIL_PASS
+                user: env.MAIL_USER,
+                pass: env.MAIL_PASS
             }
         })
 
         transporter.sendMail({
-            from: process.env.MAIL_USER,
+            from: env.MAIL_USER,
             to: to,
             subject: subject,
             text: text

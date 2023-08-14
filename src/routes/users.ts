@@ -7,6 +7,7 @@ import EmailAlreadyExistError from "../errors/EmailAlreadyExistError";
 import WrongPasswordError from "../errors/WrongPasswordError";
 import NotFoundError from "../errors/NotFoundError";
 import MailSender from "../agents/MailSender";
+import { env } from '../env';
 
 const router = Router();
 
@@ -17,7 +18,7 @@ router.get('/', function (req, res, next) {
 
 /* Post users registration. */
 router.post('/', function (req, res, next) {
-    if(process.env.REGISTRATION_ENABLED === 'true') {
+    if(env.REGISTRATION_ENABLED) {
         if(!req.body.username || !req.body.email || !req.body.password || req.body.username === '' || req.body.email === '' || req.body.password === '') {
             res.status(400).send('MISSING PARAMETERS');
         } else {

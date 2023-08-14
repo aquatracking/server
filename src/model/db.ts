@@ -4,19 +4,20 @@ import AquariumModel from "./AquariumModel";
 import ApplicationModel from "./ApplicationModel";
 import MeasurementModel from "./MeasurementModel";
 import MeasurementSettingModel from "./MeasurementSettingModel";
+import { env } from "../env";
 
 export default class Db {
     private static sequelize = null;
 
     static async init(): Promise<void> {
         this.sequelize = new Sequelize(
-            process.env.MARIADB_DATABASE,
-            process.env.MARIADB_USER,
-            process.env.MARIADB_PASSWORD,
+            env.MARIADB_DATABASE,
+            env.MARIADB_USER,
+            env.MARIADB_PASSWORD,
             {
                 dialect: 'mysql',
-                host: process.env.MARIADB_HOST,
-                port: Number(process.env.MARIADB_PORT),
+                host: env.MARIADB_HOST,
+                port: env.MARIADB_PORT,
             }
         );
         await Db.sequelize.authenticate();
