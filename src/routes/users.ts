@@ -58,4 +58,11 @@ router.post('/login', function (req, res, next) {
     }
 });
 
+/* get user info */
+router.get('/me', function (req, res, next) {
+    if(req.user) {
+        res.send(req.user);
+    }
+});
+
 module.exports = router;
