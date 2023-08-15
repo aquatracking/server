@@ -1,5 +1,5 @@
-import {Model, Op} from "sequelize";
-import UserDto from "../dto/UserDto";
+import { CreationOptional, ForeignKey, InferAttributes, InferCreationAttributes, Model, NonAttribute, Op } from "sequelize";
+import { UserDto } from "../dto/UserDto";
 import BadRequestError from "../errors/BadRequestError";
 import MeasurementModel from "./MeasurementModel";
 import MeasurementTypeModel from "./MeasurementTypeModel";
@@ -8,14 +8,19 @@ import MailSender from "../agents/MailSender";
 import UserModel from "./UserModel";
 import NotFoundError from "../errors/NotFoundError";
 
-export default class AquariumModel extends Model {
-    id: string
-    name: string
-    description: string
-    startedDate: Date
-    volume: number
-    salt: boolean
-    archivedDate: Date
+export default class AquariumModel extends Model<InferAttributes<AquariumModel>, InferCreationAttributes<AquariumModel>> {
+    declare id: CreationOptional<string>;
+    declare name: string
+    declare description: string
+    declare startedDate: Date
+    declare volume: number
+    declare salt: boolean
+    declare imageUrl: string
+    declare image: Blob
+    declare archivedDate: Date | null;
+
+    declare userId: ForeignKey<UserModel["id"]>;
+    declare user?: NonAttribute<UserModel>;
 
     static notificationCooldown = 1000 * 60 * 60 * 24 // 24h
     static notificationCooldownHistory: Array<{aquariumId: string, typeCode: string, expire: Date}> = []
@@ -116,7 +121,7 @@ export default class AquariumModel extends Model {
         AquariumModel.notificationCooldownHistory = AquariumModel.notificationCooldownHistory.filter(cooldown => cooldown.expire > new Date())
 
         // if mail alert is enabled and is needed to send mail
-        if(setting.mailAlert && ((setting.minValue != null && setting.minValue > value) || (setting.maxValue != null && setting.maxValue < value))) {
+        if(setting && setting.mailAlert && ((setting.minValue != null && setting.minValue > value) || (setting.maxValue != null && setting.maxValue < value))) {
             if(AquariumModel.notificationCooldownHistory.find(item => item.aquariumId == this.id && item.typeCode == type.code && item.expire > new Date()) == undefined) {
                 // get user of this aquarium
                 let user = await UserModel.findOne({
@@ -133,7 +138,9 @@ export default class AquariumModel extends Model {
                 alertMessage += `\nVous pouvez modifier les paramètres d'alerte dans l'application.`
 
                 // send mail
-                MailSender.sendToUser(user, "Alerte sur votre aquarium " + this.name, alertMessage)
+                if (user) {
+                    MailSender.sendToUser(user, "Alerte sur votre aquarium " + this.name, alertMessage)
+                }
 
                 // add to cooldown history
                 AquariumModel.notificationCooldownHistory.push({
@@ -163,7 +170,7 @@ export default class AquariumModel extends Model {
         })
     }
 
-    async getLastMeasurement(type: MeasurementTypeModel) : Promise<MeasurementModel> {
+    async getLastMeasurement(type: MeasurementTypeModel) : Promise<MeasurementModel | null> {
         return MeasurementModel.findOne({
             where: {
                 aquariumId: this.id,

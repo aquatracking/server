@@ -1,17 +1,19 @@
 import UserTokenUtil from "./utils/UserTokenUtil";
 
-import express from 'express';
-import http from 'http';
-import * as dotenv from 'dotenv';
-import fs from 'fs';
-import cookieParser from 'cookie-parser';
-import * as jwt from './jwt';
+import express from "express";
+import http from "http";
+import * as dotenv from "dotenv";
+import fs from "fs";
+import cookieParser from "cookie-parser";
+import * as jwt from "./jwt";
 
-import Db from './model/db';
-import UserDto from "./dto/UserDto";
+import Db from "./model/db";
+import { UserDtoSchema } from "./dto/UserDto";
 import UserModel from "./model/UserModel";
 import ApplicationModel from "./model/ApplicationModel";
 import { env, ensureValidEnv } from "./env";
+import { tryPromise } from "./utils/tryPromise";
+import { ApplicationTokenDtoSchema } from "./dto/ApplicationTokenDto";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync('.env')) {
@@ -48,73 +50,84 @@ server.on('error', onError);
 server.on('listening', onListening);
 
 // - - - - - Routes - - - - - //
-app.all('*', function (req, res, next) {
-    if (req.path === '/users/login' || req.path === '/users') {
+app.all("*", async function (req, res, next) {
+    if (req.path === "/users/login" || req.path === "/users") {
         next();
-    } else {
-        const { application_token} = req.headers;
-        if(application_token && typeof application_token === "string") {
-            jwt.verify(application_token, env.APPLICATION_TOKEN_SECRET)
-                .then((decoded) => {
-                    ApplicationModel.findOne({
-                        where: {
-                            token: req.headers.application_token,
-                        },
-                    })
-                        .then((application) => {
-                            // decoded cannot be a string since the
-                            // token is generated from an object
-                            if (application && typeof decoded !== "string") {
-                                req.user = new UserDto(decoded.user);
-                                next();
-                            } else {
-                                res.status(401).send({
-                                    message: "Invalid application token",
-                                });
-                            }
-                        })
-                        .catch((err) => {
-                            res.status(500).send({
-                                message: "Internal server error",
-                            });
-                        });
-                })
-                .catch((err) => {
-                    console.log(err);
-                    res.status(401).send({
-                        message: "Invalid application token",
-                    });
-                });
-        } else {
-            jwt.verify(req.cookies.access_token, env.ACCESS_TOKEN_SECRET)
-                .then(decoded => {
-                    req.user = new UserDto(decoded);
-                    next();
-                })
-                .catch((err) => {
-                    jwt.verify(req.cookies.refresh_token, env.REFRESH_TOKEN_SECRET)
-                        .then((user) => {
-                            UserModel.findByPk(user.id)
-                                .then(async function (user) {
-                                    if (user) {
-                                        res.cookie('access_token', await UserTokenUtil.generateAccessToken(new UserDto(user)), {maxAge: 1000 * 60 * 30});
-                                        res.cookie('refresh_token', req.cookies.refresh_token, {maxAge: 1000 * 60 * 60 * 24 * 30});
-                                        req.user = new UserDto(user);
-                                        next();
-                                    } else {
-                                        res.status(401).send();
-                                    }
-                                })
-                                .catch(function (err) {
-                                    res.status(401).send();
-                                });
-                        })
-                        .catch((err) => {
-                            res.status(401).send();
-                        });
+        return;
+    }
 
-                })
+    const { application_token } = req.headers;
+    if (application_token && typeof application_token === "string") {
+        const verifyApplicationToken = await tryPromise(
+            jwt.verify(application_token, env.APPLICATION_TOKEN_SECRET)
+        );
+        if (!verifyApplicationToken.success) {
+            return res.status(401).send({
+                message: "Invalid application token",
+            });
         }
+
+        const application = await ApplicationModel.findOne({
+            where: {
+                token: req.headers.application_token,
+            },
+        });
+        
+        // decoded cannot be a string since the
+        // token is generated from an object
+        // TODO: validate decoded value
+        const decodedApplicationTokenResult = ApplicationTokenDtoSchema.safeParse(verifyApplicationToken.result);
+        if (!application || decodedApplicationTokenResult.success === false) {
+            return res.status(401).send({
+                message: "Invalid application token",
+            });
+        }
+        const decoded = decodedApplicationTokenResult.data;
+
+        req.user = decoded.user;
+        return next();
+    } else {
+        const verifyAccessToken = await tryPromise(
+            jwt.verify(
+                req.cookies.access_token,
+                env.ACCESS_TOKEN_SECRET
+            )
+        );
+        const decodedAccessTokenResult = UserDtoSchema.safeParse(verifyAccessToken.result);
+        if (verifyAccessToken.success && decodedAccessTokenResult.success) {
+            req.user = decodedAccessTokenResult.data;
+            return next();
+        }
+
+        const verifyRefreshToken = await tryPromise(
+            jwt.verify(
+                req.cookies.refresh_token,
+                env.REFRESH_TOKEN_SECRET
+            )
+        );
+        const decodedRefreshTokenResult = UserDtoSchema.safeParse(verifyRefreshToken.result);
+        if (!verifyRefreshToken.success || !decodedRefreshTokenResult.success) {
+            return res.status(401).send();
+        }
+        
+        const decodedUser = decodedRefreshTokenResult.data; 
+        const findUserResult = await tryPromise(
+            UserModel.findByPk(decodedUser.id)
+        );
+        if (!findUserResult.success) {
+            return res.status(401).send();
+        }
+
+        res.cookie(
+            "access_token",
+            UserTokenUtil.generateAccessToken(decodedUser),
+            { maxAge: 1000 * 60 * 30 }
+        );
+        res.cookie("refresh_token", req.cookies.refresh_token, {
+            maxAge: 1000 * 60 * 60 * 24 * 30,
+        });
+        req.user = decodedUser;
+        return next();
     }
 });
 app.use('/', require('./routes/index'));
@@ -167,6 +180,6 @@ function onListening() {
     const addr = server.address();
     const bind = typeof addr === 'string'
         ? 'pipe ' + addr
-        : 'port ' + addr.port;
+        : 'port ' + addr?.port;
     console.log('Listening on ' + bind);
 }

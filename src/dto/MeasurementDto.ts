@@ -1,15 +1,19 @@
-import MeasurementModel from "../model/MeasurementModel";
+import { z } from "zod";
 
-export default class MeasurementDto {
-    id: string;
-    type: String;
-    value: number;
-    measuredAt: Date;
+export const MeasurementDtoSchema = z.object({
+    id: z.string(),
+    type: z.string(),
+    value: z.number(),
+    measuredAt: z.date(),
+});
 
-    constructor(measurementModel: MeasurementModel) {
-        this.id = measurementModel.id;
-        this.type = measurementModel.type;
-        this.value = measurementModel.value;
-        this.measuredAt = measurementModel.measuredAt;
-    }
-}
+export type MeasurementDto = z.infer<typeof MeasurementDtoSchema>;
+
+export const extractMeasurementDto = ({
+    id,
+    type,
+    value,
+    measuredAt,
+}: MeasurementDto) => {
+    return { id, type, value, measuredAt };
+};

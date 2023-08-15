@@ -21,7 +21,7 @@ export const verify = async (
     token: string,
     key: string,
     options?: JWTVerifyOptions
-): Promise<any> => {
+): Promise<JWTPayload> => {
     const { payload } = await jwtVerify(token, getEncodedKey(key), options);
     return payload;
 };
