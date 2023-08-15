@@ -2,7 +2,6 @@ import UserTokenUtil from "./utils/UserTokenUtil";
 
 import express from 'express';
 import http from 'http';
-import { z } from "zod";
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 import cookieParser from 'cookie-parser';
@@ -21,25 +20,9 @@ if (fs.existsSync('.env')) {
 } else {
     console.log('.env file not found, creating one with default values');
 
-    fs.writeFileSync('.env', `
-        PORT=3000
-        MARIADB_HOST=localhost
-        MARIADB_PORT=3306
-        MARIADB_USER=root
-        MARIADB_PASSWORD=example
-        MARIADB_DATABASE=aquatracking
-        ACCESS_TOKEN_SECRET=
-        REFRESH_TOKEN_SECRET=
-        APPLICATION_TOKEN_SECRET=
-        MAIL_HOST=localhost
-        MAIL_PORT=25
-        MAIL_USER=mail@exemple.fr
-        MAIL_PASS=password
-        MAIL_SSL=false
-        REGISTRATION_ENABLED=false
-    `.replaceAll('    ', ''));
+    fs.copyFileSync(".env.example", ".env")
 
-    console.log('Please complete .env file')
+    console.log('Please complete the .env file')
 
     process.exit(1);
 }
