@@ -11,6 +11,7 @@ import Db from './model/db';
 import UserDto from "./dto/UserDto";
 import UserModel from "./model/UserModel";
 import ApplicationModel from "./model/ApplicationModel";
+import { env, ensureValidEnv } from "./env";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync('.env')) {
@@ -19,84 +20,14 @@ if (fs.existsSync('.env')) {
 } else {
     console.log('.env file not found, creating one with default values');
 
-    fs.writeFileSync('.env', `
-        PORT=3000
-        MARIADB_HOST=localhost
-        MARIADB_PORT=3306
-        MARIADB_USER=root
-        MARIADB_PASSWORD=example
-        MARIADB_DATABASE=aquatracking
-        ACCESS_TOKEN_SECRET=
-        REFRESH_TOKEN_SECRET=
-        APPLICATION_TOKEN_SECRET=
-        MAIL_HOST=localhost
-        MAIL_PORT=25
-        MAIL_USER=mail@exemple.fr
-        MAIL_PASS=password
-        MAIL_SSL=false
-        REGISTRATION_ENABLED=false
-    `.replaceAll('    ', ''));
+    fs.copyFileSync(".env.example", ".env")
 
-    console.log('Please complete .env file')
+    console.log('Please complete the .env file')
 
     process.exit(1);
 }
 
-let envNotCompleted = false;
-if (process.env.MARIADB_HOST === undefined || process.env.MARIADB_HOST === '') {
-    console.error('Environment variable MARIADB_HOST is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.MARIADB_PORT === undefined || process.env.MARIADB_PORT === '') {
-    console.error('Environment variable MARIADB_PORT is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.MARIADB_USER === undefined || process.env.MARIADB_USER === '') {
-    console.error('Environment variable MARIADB_USER is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.MARIADB_PASSWORD === undefined || process.env.MARIADB_PASSWORD === '') {
-    console.error('Environment variable MARIADB_PASSWORD is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.MARIADB_DATABASE === undefined || process.env.MARIADB_DATABASE === '') {
-    console.error('Environment variable MARIADB_DATABASE is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.ACCESS_TOKEN_SECRET === undefined || process.env.ACCESS_TOKEN_SECRET === '') {
-    console.error('Environment variable ACCESS_TOKEN_SECRET is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.REFRESH_TOKEN_SECRET === undefined || process.env.REFRESH_TOKEN_SECRET === '') {
-    console.error('Environment variable REFRESH_TOKEN_SECRET is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.APPLICATION_TOKEN_SECRET === undefined || process.env.APPLICATION_TOKEN_SECRET === '') {
-    console.error('Environment variable APPLICATION_TOKEN_SECRET is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.MAIL_HOST === undefined || process.env.MAIL_HOST === '') {
-    console.error('Environment variable MAIL_HOST is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.MAIL_PORT === undefined || process.env.MAIL_PORT === '') {
-    console.error('Environment variable MAIL_PORT is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.MAIL_USER === undefined || process.env.MAIL_USER === '') {
-    console.error('Environment variable MAIL_USER is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.MAIL_PASS === undefined || process.env.MAIL_PASS === '') {
-    console.error('Environment variable MAIL_PASS is not defined.');
-    envNotCompleted = true;
-}
-if (process.env.REGISTRATION_ENABLED === undefined || process.env.REGISTRATION_ENABLED === '') {
-    console.error('Environment variable REGISTRATION_ENABLED is not defined.');
-    envNotCompleted = true;
-}
-
-if(envNotCompleted) process.exit(1);
+ensureValidEnv();
 
 // - - - - - Serveur Express - - - - - //
 console.log('Starting server...');
@@ -107,7 +38,7 @@ app.use(express.urlencoded({limit: '50mb' ,extended: false}));
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-const port = normalizePort(process.env.PORT || '3000');
+const port = env.PORT;
 app.set('port', port);
 
 const server = http.createServer(app);
@@ -123,7 +54,7 @@ app.all('*', function (req, res, next) {
     } else {
         const { application_token} = req.headers;
         if(application_token && typeof application_token === "string") {
-            jwt.verify(application_token, process.env.APPLICATION_TOKEN_SECRET, function (err, decoded) {
+            jwt.verify(application_token, env.APPLICATION_TOKEN_SECRET, function (err, decoded) {
                 if(err) {
                     console.log(err);
                     res.status(401).send({
@@ -153,9 +84,9 @@ app.all('*', function (req, res, next) {
                 }
             });
         } else {
-            jwt.verify(req.cookies.access_token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+            jwt.verify(req.cookies.access_token, env.ACCESS_TOKEN_SECRET, function (err, decoded) {
                 if (err) {
-                    jwt.verify(req.cookies.refresh_token, process.env.REFRESH_TOKEN_SECRET, function (err, user) {
+                    jwt.verify(req.cookies.refresh_token, env.REFRESH_TOKEN_SECRET, function (err, user) {
                         if (err) {
                             res.status(401).send();
                         } else {
@@ -196,24 +127,6 @@ Db.init().catch(err => {
 });
 
 // - - - - - Functions - - - - - //
-/**
- * Normalize a port into a number, string, or false.
- */
-function normalizePort(val: string) {
-    const port = parseInt(val, 10);
-
-    if (isNaN(port)) {
-        // named pipe
-        return val;
-    }
-
-    if (port >= 0) {
-        // port number
-        return port;
-    }
-
-    return false;
-}
 
 /**
  * Event listener for HTTP server "error" event.

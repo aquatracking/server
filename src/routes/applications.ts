@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import BadRequestError from "../errors/BadRequestError";
 import ApplicationModel from "../model/ApplicationModel";
 import ApplicationDto from "../dto/ApplicationDto";
+import { env } from '../env';
 
 const router = Router();
 
@@ -15,7 +16,7 @@ router.post('/', async function (req, res, next) {
             name: req.body.name,
             description: req.body.description,
             user: req.user
-        }, process.env.APPLICATION_TOKEN_SECRET),
+        }, env.APPLICATION_TOKEN_SECRET),
         userId: req.user.id
     }).then(application => {
         res.json(new ApplicationDto(application));
