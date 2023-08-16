@@ -63,7 +63,7 @@ const dotEnvSchema = z.object({
   MAIL_USER: z.string().nonempty(),
   MAIL_PASS: z.string(),
   MAIL_SSL: z
-    .preprocess((value) => Boolean(value), z.boolean())
+    .preprocess((value) => value === true, z.boolean())
     .default("false"),
-  REGISTRATION_ENABLED: z.preprocess((value) => Boolean(value), z.boolean()),
+  REGISTRATION_ENABLED: z.preprocess((value) => value === "true", z.boolean()),
 });
