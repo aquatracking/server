@@ -1,5 +1,5 @@
 import Router from 'express';
-import jwt from "jsonwebtoken";
+import * as jwt from "../jwt";
 import BadRequestError from "../errors/BadRequestError";
 import ApplicationModel from "../model/ApplicationModel";
 import ApplicationDto from "../dto/ApplicationDto";
@@ -9,14 +9,21 @@ const router = Router();
 
 /* Post a new application. */
 router.post('/', async function (req, res, next) {
-    ApplicationModel.addApplication({
-        name: req.body.name,
-        description: req.body.description,
-        token: jwt.sign({
+    let token: string;
+    try {
+        token = await jwt.sign({
             name: req.body.name,
             description: req.body.description,
             user: req.user
-        }, env.APPLICATION_TOKEN_SECRET),
+        }, env.APPLICATION_TOKEN_SECRET)
+    } catch(err) {
+        console.error("error while signing a JWT:", err);
+        return res.status(500);
+    }
+    ApplicationModel.addApplication({
+        name: req.body.name,
+        description: req.body.description,
+        token,
         userId: req.user.id
     }).then(application => {
         res.json(new ApplicationDto(application));

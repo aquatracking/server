@@ -11,7 +11,7 @@ export default class UserDto {
         this.email = user.email;
     }
 
-    toJSON(): object {
+    toJSON() {
         return {
             id: this.id,
             username: this.username,

@@ -42,9 +42,9 @@ router.post('/login', function (req, res, next) {
     if(!req.body.email || !req.body.password || req.body.email === '' || req.body.password === '') {
         res.status(400).send('MISSING PARAMETERS');
     } else {
-        UserModel.login(req.body.email, req.body.password).then(r => {
-            res.cookie('access_token', UserTokenUtil.generateAccessToken(r), {maxAge: 1000 * 60 * 30});
-            res.cookie('refresh_token', UserTokenUtil.generateRefreshToken(r), {maxAge: 1000 * 60 * 60 * 24 * 7 * 365});
+        UserModel.login(req.body.email, req.body.password).then(async r => {
+            res.cookie('access_token', await UserTokenUtil.generateAccessToken(r), {maxAge: 1000 * 60 * 30});
+            res.cookie('refresh_token', await UserTokenUtil.generateRefreshToken(r), {maxAge: 1000 * 60 * 60 * 24 * 7 * 365});
             res.send(r);
 
             MailSender.send(r.email, `Nouvelle connexion à votre compte`, `Bonjour ${r.username},\n\nUne nouvelle connexion a été effectuée sur votre compte depuis l'adresse IP ${req.ip}.\n\nCordialement,\nL'équipe AquaTracking`);
