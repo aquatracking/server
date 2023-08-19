@@ -17,15 +17,16 @@ const getEncodedKey = (rawKey: string) => {
     return new TextEncoder().encode(rawKey);
 };
 
-export const verify = (
+export const verify = async (
     token: string,
     key: string,
     options?: JWTVerifyOptions
 ): Promise<any> => {
-    return jwtVerify(token, getEncodedKey(key), options);
+    const { payload } = await jwtVerify(token, getEncodedKey(key), options);
+    return payload;
 };
 
-export const decode = (token: string): unknown => {
+export const decode = (token: string): JWTPayload => {
     return decodeJwt(token);
 };
 
@@ -34,7 +35,7 @@ export const sign = (
     key: string,
     options?: SignOptions
 ): Promise<string> => {
-    const jwtSigner = new SignJWT(payload);
+    const jwtSigner = new SignJWT(payload).setProtectedHeader({ alg: "HS256" });
     // for each option, call the corresponding SignJWT setter
     if (options) {
         for (const option of getObjectTypedKeys(options)) {
@@ -47,7 +48,7 @@ export const sign = (
                 continue;
             }
             const setter = jwtSigner[setterKey] as (value: unknown) => void;
-            setter(options[option]);
+            setter.call(jwtSigner, options[option]);
         }
     }
     return jwtSigner.sign(getEncodedKey(key));
