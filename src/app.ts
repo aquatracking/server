@@ -55,12 +55,6 @@ app.all('*', function (req, res, next) {
         const { application_token} = req.headers;
         if(application_token && typeof application_token === "string") {
             jwt.verify(application_token, env.APPLICATION_TOKEN_SECRET)
-                .catch((err) => {
-                    console.log(err);
-                    res.status(401).send({
-                        message: "Invalid application token",
-                    });
-                })
                 .then((decoded) => {
                     ApplicationModel.findOne({
                         where: {
@@ -84,12 +78,21 @@ app.all('*', function (req, res, next) {
                                 message: "Internal server error",
                             });
                         });
+                })
+                .catch((err) => {
+                    console.log(err);
+                    res.status(401).send({
+                        message: "Invalid application token",
+                    });
                 });
         } else {
             jwt.verify(req.cookies.access_token, env.ACCESS_TOKEN_SECRET)
+                .then(decoded => {
+                    req.user = new UserDto(decoded);
+                    next();
+                })
                 .catch((err) => {
                     jwt.verify(req.cookies.refresh_token, env.REFRESH_TOKEN_SECRET)
-                        .catch((err) => res.status(401).send())
                         .then((user) => {
                             UserModel.findByPk(user.id)
                                 .then(async function (user) {
@@ -105,12 +108,11 @@ app.all('*', function (req, res, next) {
                                 .catch(function (err) {
                                     res.status(401).send();
                                 });
+                        })
+                        .catch((err) => {
+                            res.status(401).send();
                         });
 
-                })
-                .then(decoded => {
-                    req.user = new UserDto(decoded);
-                    next();
                 })
         }
     }
