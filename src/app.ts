@@ -5,7 +5,7 @@ import http from 'http';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 import cookieParser from 'cookie-parser';
-import jwt from 'jsonwebtoken';
+import * as jwt from './jwt';
 
 import Db from './model/db';
 import UserDto from "./dto/UserDto";
@@ -54,61 +54,66 @@ app.all('*', function (req, res, next) {
     } else {
         const { application_token} = req.headers;
         if(application_token && typeof application_token === "string") {
-            jwt.verify(application_token, env.APPLICATION_TOKEN_SECRET, function (err, decoded) {
-                if(err) {
-                    console.log(err);
-                    res.status(401).send({
-                        message: 'Invalid application token'
-                    });
-                } else {
+            jwt.verify(application_token, env.APPLICATION_TOKEN_SECRET)
+                .then((decoded) => {
                     ApplicationModel.findOne({
                         where: {
-                            token: req.headers.application_token
-                        }
-                    }).then(application => {
-                        // decoded cannot be a string since the
-                        // token is generated from an object
-                        if(application && typeof decoded !== "string") {
-                            req.user = new UserDto(decoded.user);
-                            next();
-                        } else {
-                            res.status(401).send({
-                                message: 'Invalid application token'
-                            });
-                        }
-                    }).catch(err => {
-                        res.status(500).send({
-                            message: 'Internal server error'
-                        });
+                            token: req.headers.application_token,
+                        },
                     })
-                }
-            });
-        } else {
-            jwt.verify(req.cookies.access_token, env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-                if (err) {
-                    jwt.verify(req.cookies.refresh_token, env.REFRESH_TOKEN_SECRET, function (err, user) {
-                        if (err) {
-                            res.status(401).send();
-                        } else {
-                            UserModel.findByPk(user.id).then(function (user) {
-                                if (user) {
-                                    res.cookie('access_token', UserTokenUtil.generateAccessToken(new UserDto(user)), {maxAge: 1000 * 60 * 30});
-                                    res.cookie('refresh_token', req.cookies.refresh_token, {maxAge: 1000 * 60 * 60 * 24 * 30});
-                                    req.user = new UserDto(user);
-                                    next();
-                                } else {
-                                    res.status(401).send();
-                                }
-                            }).catch(function (err) {
-                                res.status(401).send();
-                            })
-                        }
+                        .then((application) => {
+                            // decoded cannot be a string since the
+                            // token is generated from an object
+                            if (application && typeof decoded !== "string") {
+                                req.user = new UserDto(decoded.user);
+                                next();
+                            } else {
+                                res.status(401).send({
+                                    message: "Invalid application token",
+                                });
+                            }
+                        })
+                        .catch((err) => {
+                            res.status(500).send({
+                                message: "Internal server error",
+                            });
+                        });
+                })
+                .catch((err) => {
+                    console.log(err);
+                    res.status(401).send({
+                        message: "Invalid application token",
                     });
-                } else {
+                });
+        } else {
+            jwt.verify(req.cookies.access_token, env.ACCESS_TOKEN_SECRET)
+                .then(decoded => {
                     req.user = new UserDto(decoded);
                     next();
-                }
-            });
+                })
+                .catch((err) => {
+                    jwt.verify(req.cookies.refresh_token, env.REFRESH_TOKEN_SECRET)
+                        .then((user) => {
+                            UserModel.findByPk(user.id)
+                                .then(async function (user) {
+                                    if (user) {
+                                        res.cookie('access_token', await UserTokenUtil.generateAccessToken(new UserDto(user)), {maxAge: 1000 * 60 * 30});
+                                        res.cookie('refresh_token', req.cookies.refresh_token, {maxAge: 1000 * 60 * 60 * 24 * 30});
+                                        req.user = new UserDto(user);
+                                        next();
+                                    } else {
+                                        res.status(401).send();
+                                    }
+                                })
+                                .catch(function (err) {
+                                    res.status(401).send();
+                                });
+                        })
+                        .catch((err) => {
+                            res.status(401).send();
+                        });
+
+                })
         }
     }
 });
