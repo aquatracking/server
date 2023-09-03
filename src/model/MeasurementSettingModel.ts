@@ -1,19 +1,19 @@
-import {Model} from "sequelize";
+import { Model } from "sequelize";
 import MeasurementSettingDto from "../dto/MeasurementSettingDto";
 
-export default class MeasurementSettingModel extends Model{
-    id: string
-    aquariumId: string
-    type: string
-    visible: boolean
-    order: number
-    defaultMode: number
-    minValue: number
-    maxValue: number
-    mailAlert: boolean
-    notificationAlert: boolean
+export default class MeasurementSettingModel extends Model {
+    id: string;
+    aquariumId: string;
+    type: string;
+    visible: boolean;
+    order: number;
+    defaultMode: number;
+    minValue: number;
+    maxValue: number;
+    mailAlert: boolean;
+    notificationAlert: boolean;
 
-    static fromDto(dto: MeasurementSettingDto) : MeasurementSettingModel {
+    static fromDto(dto: MeasurementSettingDto): MeasurementSettingModel {
         return new MeasurementSettingModel({
             id: dto.id,
             aquariumId: dto.aquariumId,
@@ -24,7 +24,7 @@ export default class MeasurementSettingModel extends Model{
             minValue: dto.minValue,
             maxValue: dto.maxValue,
             mailAlert: dto.mailAlert,
-            notificationAlert: dto.notificationAlert
-        })
+            notificationAlert: dto.notificationAlert,
+        });
     }
 }

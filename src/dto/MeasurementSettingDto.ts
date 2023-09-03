@@ -16,13 +16,16 @@ export default class MeasurementSettingDto {
     constructor(aquariumMeasurementSettingModel: MeasurementSettingModel) {
         this.id = aquariumMeasurementSettingModel.id;
         this.aquariumId = aquariumMeasurementSettingModel.aquariumId;
-        this.type = MeasurementTypeModel.getByCode(aquariumMeasurementSettingModel.type);
+        this.type = MeasurementTypeModel.getByCode(
+            aquariumMeasurementSettingModel.type,
+        );
         this.visible = aquariumMeasurementSettingModel.visible;
         this.order = aquariumMeasurementSettingModel.order;
         this.defaultMode = aquariumMeasurementSettingModel.defaultMode;
         this.minValue = aquariumMeasurementSettingModel.minValue;
         this.maxValue = aquariumMeasurementSettingModel.maxValue;
         this.mailAlert = aquariumMeasurementSettingModel.mailAlert;
-        this.notificationAlert = aquariumMeasurementSettingModel.notificationAlert;
+        this.notificationAlert =
+            aquariumMeasurementSettingModel.notificationAlert;
     }
 }

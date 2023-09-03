@@ -1,3 +1,1 @@
-export default class WrongPasswordError extends Error {
-
-}
+export default class WrongPasswordError extends Error {}

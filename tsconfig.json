@@ -1,13 +1,11 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "target": "ES2021",
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "sourceMap": true,
-    "skipLibCheck": true
-  },
-  "exclude": [
-    "node_modules"
-  ]
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "ES2021",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "sourceMap": true,
+        "skipLibCheck": true
+    },
+    "exclude": ["node_modules"]
 }
