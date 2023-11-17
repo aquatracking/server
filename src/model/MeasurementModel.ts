@@ -8,7 +8,10 @@ import {
 } from "sequelize";
 import AquariumModel from "./AquariumModel";
 
-export default class MeasurementModel extends Model<InferAttributes<MeasurementModel>, InferCreationAttributes<MeasurementModel>> {
+export default class MeasurementModel extends Model<
+    InferAttributes<MeasurementModel>,
+    InferCreationAttributes<MeasurementModel>
+> {
     declare id: CreationOptional<string>;
     declare type: string;
     declare value: number;

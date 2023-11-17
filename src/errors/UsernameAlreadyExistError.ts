@@ -1,3 +1,1 @@
-export default class UsernameAlreadyExistError extends Error {
-
-}
+export default class UsernameAlreadyExistError extends Error {}

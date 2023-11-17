@@ -1,3 +1,1 @@
-export default class EmailAlreadyExistError extends Error {
-
-}
+export default class EmailAlreadyExistError extends Error {}

@@ -1,8 +1,18 @@
-import { CreationOptional, ForeignKey, InferAttributes, InferCreationAttributes, Model, NonAttribute } from "sequelize";
+import {
+    CreationOptional,
+    ForeignKey,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute,
+} from "sequelize";
 import { MeasurementSettingDto } from "../dto/MeasurementSettingDto";
 import AquariumModel from "./AquariumModel";
 
-export default class MeasurementSettingModel extends Model<InferAttributes<MeasurementSettingModel>, InferCreationAttributes<MeasurementSettingModel>> {
+export default class MeasurementSettingModel extends Model<
+    InferAttributes<MeasurementSettingModel>,
+    InferCreationAttributes<MeasurementSettingModel>
+> {
     declare id: CreationOptional<string>;
     declare type: string;
     declare visible: CreationOptional<boolean>;

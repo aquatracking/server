@@ -1,3 +1,1 @@
-export default class NotFoundError extends Error {
-
-}
+export default class NotFoundError extends Error {}

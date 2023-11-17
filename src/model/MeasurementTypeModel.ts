@@ -11,7 +11,7 @@ export default class MeasurementTypeModel {
         new MeasurementTypeModel("NO3", "Nitrate (NO3)", "mg/L"),
         new MeasurementTypeModel("KH", "Dureté carbonatée (KH)", "°KH"),
         new MeasurementTypeModel("GH", "Dureté totale (GH)", "°GH"),
-    ]
+    ];
 
     constructor(code: string, name: string, unit: string) {
         this.code = code;
@@ -20,7 +20,7 @@ export default class MeasurementTypeModel {
     }
 
     static getByCode(code: string): MeasurementTypeModel | undefined {
-        return MeasurementTypeModel.types.find(t => t.code === code);
+        return MeasurementTypeModel.types.find((t) => t.code === code);
     }
 
     static getAll(): MeasurementTypeModel[] {

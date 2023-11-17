@@ -3,7 +3,7 @@ import * as jwt from "../jwt";
 import BadRequestError from "../errors/BadRequestError";
 import ApplicationModel from "../model/ApplicationModel";
 import ApplicationDto from "../dto/ApplicationDto";
-import { env } from '../env';
+import { env } from "../env";
 import { tryPromise } from "../utils/tryPromise";
 import { ApplicationTokenDto } from "../dto/ApplicationTokenDto";
 
@@ -18,7 +18,7 @@ router.post("/", async function (req, res) {
         user: currentUser,
     } satisfies ApplicationTokenDto;
     const signTokenResult = await tryPromise(
-        jwt.sign(applicationTokenData, env.APPLICATION_TOKEN_SECRET)
+        jwt.sign(applicationTokenData, env.APPLICATION_TOKEN_SECRET),
     );
     if (!signTokenResult.success) {
         // TODO: handle error
@@ -26,11 +26,14 @@ router.post("/", async function (req, res) {
     }
 
     const addApplicationResult = await tryPromise(
-        ApplicationModel.addApplication({
-            name: req.body.name,
-            description: req.body.description,
-            token: signTokenResult.result,
-        }, currentUser)
+        ApplicationModel.addApplication(
+            {
+                name: req.body.name,
+                description: req.body.description,
+                token: signTokenResult.result,
+            },
+            currentUser,
+        ),
     );
     if (!addApplicationResult.success) {
         const error = addApplicationResult.error;

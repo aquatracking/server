@@ -1,4 +1,10 @@
-import { CreationOptional, InferAttributes, InferCreationAttributes, Model, UniqueConstraintError } from "sequelize";
+import {
+    CreationOptional,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    UniqueConstraintError,
+} from "sequelize";
 import bcrypt from "bcryptjs";
 
 import UsernameAlreadyExistError from "../errors/UsernameAlreadyExistError";
@@ -8,21 +14,28 @@ import WrongPasswordError from "../errors/WrongPasswordError";
 import NotFoundError from "../errors/NotFoundError";
 import { tryPromise } from "../utils/tryPromise";
 
-export default class UserModel extends Model<InferAttributes<UserModel>, InferCreationAttributes<UserModel>> {
+export default class UserModel extends Model<
+    InferAttributes<UserModel>,
+    InferCreationAttributes<UserModel>
+> {
     declare id: CreationOptional<string>;
     declare username: string;
     declare email: string;
     declare password: string;
 
-    static async register(username: string, email: string, password: string): Promise<UserDto> {
+    static async register(
+        username: string,
+        email: string,
+        password: string,
+    ): Promise<UserDto> {
         const createUserResult = await tryPromise(
             UserModel.create({
                 username: username,
                 email: email,
                 password: bcrypt.hashSync(password, 10),
-            })
+            }),
         );
-        if (!createUserResult.result){
+        if (!createUserResult.result) {
             const error = createUserResult.error;
             if (error instanceof UniqueConstraintError) {
                 if (error.errors[0].path === "username") {
@@ -43,9 +56,9 @@ export default class UserModel extends Model<InferAttributes<UserModel>, InferCr
                 where: {
                     email: email,
                 },
-            })
+            }),
         );
-        if (!findUserResult.success){
+        if (!findUserResult.success) {
             throw new NotFoundError();
         }
 
