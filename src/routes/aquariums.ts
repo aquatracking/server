@@ -1,19 +1,23 @@
 import Router from "express";
 import AquariumModel from "../model/AquariumModel";
-import AquariumDto from "../dto/AquariumDto";
 import BadRequestError from "../errors/BadRequestError";
 import MeasurementTypeModel from "../model/MeasurementTypeModel";
-import MeasurementDto from "../dto/MeasurementDto";
-import MeasurementSettingDto from "../dto/MeasurementSettingDto";
 import MeasurementSettingModel from "../model/MeasurementSettingModel";
+import { extractAquariumDto } from "../dto/AquariumDto";
+import { extractMeasurementDto } from "../dto/MeasurementDto";
+import {
+    MeasurementSettingDtoSchema,
+    extractMeasurementSettingsDto,
+} from "../dto/MeasurementSettingDto";
+import { z } from "zod";
 
 const router = Router();
 
 /** GET aquariums listing. */
 router.get("/", function (req, res) {
-    AquariumModel.getAllOfUser(req.user)
+    AquariumModel.getAllOfUser(req.user!)
         .then((aquariums) => {
-            res.json(aquariums.map((aquarium) => new AquariumDto(aquarium)));
+            res.json(aquariums.map((aquarium) => extractAquariumDto(aquarium)));
         })
         .catch((err) => {
             console.error(err);
@@ -30,7 +34,7 @@ router.get("/:id/image", async function (req, res) {
 
     let image = await AquariumModel.getImageForOneAquariumOfUser(
         req.params.id,
-        req.user,
+        req.user!,
     ).catch(() => {
         res.status(404).json();
         return;
@@ -42,7 +46,7 @@ router.get("/:id/image", async function (req, res) {
 /** Post a new aquarium. */
 router.post("/", async function (req, res) {
     AquariumModel.createOne({
-        user: req.user,
+        user: req.user!,
         name: req.body.name,
         description: req.body.description,
         startedDate: req.body.startedDate,
@@ -52,7 +56,7 @@ router.post("/", async function (req, res) {
         salt: req.body.salt,
     })
         .then((aquarium) => {
-            res.json(new AquariumDto(aquarium));
+            res.json(extractAquariumDto(aquarium));
         })
         .catch((err) => {
             console.log(err);
@@ -71,7 +75,7 @@ router.patch("/:id", async function (req, res) {
         return;
     }
 
-    let aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user);
+    let aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user!);
     if (!aquarium) {
         res.status(404).json();
         return;
@@ -106,9 +110,10 @@ router.post("/:id/temperature", async function (req, res) {
 
     // Get type
     const type = MeasurementTypeModel.getByCode("TEMPERATURE");
+    if (!type) return res.status(404).json();
 
     // Get aquarium
-    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user);
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user!);
     if (!aquarium) return res.status(404).json();
 
     // Get value
@@ -141,7 +146,7 @@ router.get("/:id/measurements/:type", async function (req, res) {
     if (!type) return res.status(404).json();
 
     // Get aquarium
-    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user);
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user!);
     if (!aquarium) return res.status(404).json();
 
     // Get from and to dates
@@ -157,7 +162,9 @@ router.get("/:id/measurements/:type", async function (req, res) {
             toDate,
         );
         return res.json(
-            measurements.map((measurement) => new MeasurementDto(measurement)),
+            measurements.map((measurement) =>
+                extractMeasurementDto(measurement),
+            ),
         );
     } catch (err) {
         console.log(err);
@@ -177,14 +184,14 @@ router.get("/:id/measurements/:type/last", async function (req, res) {
     if (!type) return res.status(404).json();
 
     // Get aquarium
-    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user);
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user!);
     if (!aquarium) return res.status(404).json();
 
     // Get last measurement
     try {
         const measurement = await aquarium.getLastMeasurement(type);
         return res.json(
-            measurement != null ? new MeasurementDto(measurement) : null,
+            measurement != null ? extractMeasurementDto(measurement) : null,
         );
     } catch (err) {
         console.log(err);
@@ -204,7 +211,7 @@ router.post("/:id/measurements/:type", async function (req, res) {
     if (!type) return res.status(404).json();
 
     // Get aquarium
-    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user);
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user!);
     if (!aquarium) return res.status(404).json();
 
     // Get value
@@ -238,13 +245,13 @@ router.get("/:id/measurements", async function (req, res) {
     }
 
     // Get aquarium
-    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user);
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user!);
     if (!aquarium) return res.status(404).json();
 
     // Get settings
     const settings = await aquarium.getMeasurementsSettings();
     return res.json(
-        settings.map((setting) => new MeasurementSettingDto(setting)),
+        settings.map((setting) => extractMeasurementSettingsDto(setting)),
     );
 });
 
@@ -261,15 +268,19 @@ router.patch("/:id/measurements", async function (req, res) {
     }
 
     // Get aquarium
-    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user);
+    const aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user!);
     if (!aquarium) return res.status(404).json();
 
     // Get settings
-    let settings = req.body.settings;
-    if (!settings) return res.status(400).json();
+    const settingsParseResult = z
+        .array(MeasurementSettingDtoSchema)
+        .safeParse(req.body.settings);
+    if (!settingsParseResult.success) return res.status(400).json();
 
+    const rawSettings = settingsParseResult.data;
+    let settings: MeasurementSettingModel[];
     try {
-        settings = settings.map((setting) =>
+        settings = rawSettings.map((setting) =>
             MeasurementSettingModel.fromDto(setting),
         );
     } catch (err) {
@@ -296,7 +307,7 @@ router.put("/:id/archive", async function (req, res) {
         return;
     }
 
-    let aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user);
+    let aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user!);
     if (!aquarium) return res.status(404).json();
 
     aquarium
@@ -317,7 +328,7 @@ router.put("/:id/unarchive", async function (req, res) {
         return;
     }
 
-    let aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user);
+    let aquarium = await AquariumModel.getOneOfUser(req.params.id, req.user!);
     if (!aquarium) return res.status(404).json();
 
     aquarium

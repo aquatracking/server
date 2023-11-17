@@ -1,16 +1,16 @@
-import UserDto from "../dto/UserDto";
-import * as jwt from "../jwt";
+import { UserDto } from "../dto/UserDto";
 import { env } from "../env";
+import * as jwt from "../jwt";
 
 export default class UserTokenUtil {
     static generateAccessToken(user: UserDto): Promise<string> {
-        return jwt.sign(user.toJSON(), env.ACCESS_TOKEN_SECRET, {
+        return jwt.sign(user, env.ACCESS_TOKEN_SECRET, {
             expirationTime: "1800s",
         });
     }
 
     static generateRefreshToken(user: UserDto): Promise<string> {
-        return jwt.sign(user.toJSON(), env.REFRESH_TOKEN_SECRET, {
+        return jwt.sign(user, env.REFRESH_TOKEN_SECRET, {
             expirationTime: "1y",
         });
     }

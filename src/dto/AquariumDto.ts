@@ -1,21 +1,38 @@
-import AquariumModel from "../model/AquariumModel";
+import { z } from "zod";
 
-export default class AquariumDto {
-    id: string;
-    name: string;
-    description: string;
-    startedDate: Date;
-    volume: number;
-    salt: boolean;
-    archivedDate: Date;
+export const AquariumDtoSchema = z.object({
+    id: z.string().uuid().nullable(),
+    name: z.string().min(1),
+    description: z.string().min(1),
+    startedDate: z.date(),
+    volume: z.number(),
+    salt: z.boolean(),
+    imageUrl: z.string(),
+    image: z.any(),
+    archivedDate: z.date().nullable(),
+});
+export type AquariumDto = z.infer<typeof AquariumDtoSchema>;
 
-    constructor(aquariumModel: AquariumModel) {
-        this.id = aquariumModel.id;
-        this.name = aquariumModel.name;
-        this.description = aquariumModel.description;
-        this.startedDate = aquariumModel.startedDate;
-        this.volume = aquariumModel.volume;
-        this.salt = aquariumModel.salt;
-        this.archivedDate = aquariumModel.archivedDate;
-    }
-}
+export const extractAquariumDto = ({
+    id,
+    name,
+    description,
+    startedDate,
+    volume,
+    salt,
+    imageUrl,
+    image,
+    archivedDate,
+}: AquariumDto) => {
+    return {
+        id,
+        name,
+        description,
+        startedDate,
+        volume,
+        salt,
+        imageUrl,
+        image,
+        archivedDate,
+    };
+};

@@ -7,7 +7,7 @@ import MeasurementSettingModel from "./MeasurementSettingModel";
 import { env } from "../env";
 
 export default class Db {
-    private static sequelize = null;
+    private static sequelize: Sequelize;
 
     static async init(): Promise<void> {
         this.sequelize = new Sequelize(
