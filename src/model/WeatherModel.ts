@@ -1,4 +1,4 @@
-import {Model} from "sequelize";
+import { Model } from "sequelize";
 
 export default class WeatherModel extends Model {
     id: string;

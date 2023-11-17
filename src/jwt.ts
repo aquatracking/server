@@ -20,7 +20,7 @@ const getEncodedKey = (rawKey: string) => {
 export const verify = async (
     token: string,
     key: string,
-    options?: JWTVerifyOptions
+    options?: JWTVerifyOptions,
 ): Promise<any> => {
     const { payload } = await jwtVerify(token, getEncodedKey(key), options);
     return payload;
@@ -33,7 +33,7 @@ export const decode = (token: string): JWTPayload => {
 export const sign = (
     payload: JWTPayload,
     key: string,
-    options?: SignOptions
+    options?: SignOptions,
 ): Promise<string> => {
     const jwtSigner = new SignJWT(payload).setProtectedHeader({ alg: "HS256" });
     // for each option, call the corresponding SignJWT setter

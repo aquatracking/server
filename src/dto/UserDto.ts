@@ -15,7 +15,7 @@ export default class UserDto {
         return {
             id: this.id,
             username: this.username,
-            email: this.email
-        }
+            email: this.email,
+        };
     }
 }

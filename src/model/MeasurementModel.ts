@@ -1,4 +1,4 @@
-import {Model} from "sequelize";
+import { Model } from "sequelize";
 
 export default class MeasurementModel extends Model {
     id: string;

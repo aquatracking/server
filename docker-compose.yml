@@ -1,5 +1,5 @@
 # Use root/example as user/password credentials
-version: '3.9'
+version: "3.9"
 services:
   mariadb:
     image: mariadb:10.7.1
@@ -9,7 +9,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: aquatracking
-      LANG : C.UTF-8
+      LANG: C.UTF-8
   phpmyadmin:
     image: phpmyadmin
     restart: always

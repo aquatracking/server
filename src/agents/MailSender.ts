@@ -1,6 +1,6 @@
-import * as nodemailer from 'nodemailer';
+import * as nodemailer from "nodemailer";
 import UserModel from "../model/UserModel";
-import { env } from '../env';
+import { env } from "../env";
 
 export default class MailSender {
     static send(to: string, subject: string, text: string) {
@@ -10,16 +10,19 @@ export default class MailSender {
             secure: env.MAIL_SSL,
             auth: {
                 user: env.MAIL_USER,
-                pass: env.MAIL_PASS
-            }
-        })
+                pass: env.MAIL_PASS,
+            },
+        });
 
-        transporter.sendMail({
-            from: env.MAIL_USER,
-            to: to,
-            subject: subject,
-            text: text
-        }).catch(console.error).then(() => console.log("Mail sent to " + to));
+        transporter
+            .sendMail({
+                from: env.MAIL_USER,
+                to: to,
+                subject: subject,
+                text: text,
+            })
+            .catch(console.error)
+            .then(() => console.log("Mail sent to " + to));
 
         return transporter.close();
     }
