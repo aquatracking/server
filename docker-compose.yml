@@ -23,6 +23,7 @@ services:
       PMA_PORT: 3306
   maildev:
     image: maildev/maildev
+    restart: always
     ports:
       - "1080:1080"
       - "25:1025"
