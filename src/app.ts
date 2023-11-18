@@ -1,7 +1,6 @@
 import UserTokenUtil from "./utils/UserTokenUtil";
 
 import express from "express";
-import http from "http";
 import * as dotenv from "dotenv";
 import fs from "fs";
 import cookieParser from "cookie-parser";
@@ -43,17 +42,14 @@ app.set("trust proxy", 1);
 const port = env.PORT;
 app.set("port", port);
 
-const server = http.createServer(app);
+app.listen(port, () => {
+    console.log(`Server started on port ${port}.`);
+});
 
-server.listen(port);
-server.on("error", onError);
-server.on("listening", onListening);
-
-// - - - - - Routes - - - - - //
-app.all("*", async function (req, res, next) {
+// - - - - - Authentication Middleware - - - - - //
+app.use(async (req, res, next) => {
     if (req.path === "/users/login" || req.path === "/users") {
-        next();
-        return;
+        return next();
     }
 
     const { application_token } = req.headers;
@@ -129,6 +125,8 @@ app.all("*", async function (req, res, next) {
         return next();
     }
 });
+
+// - - - - - Routes - - - - - //
 app.use("/", require("./routes/index"));
 app.use("/users", require("./routes/users"));
 app.use("/aquariums", require("./routes/aquariums"));
@@ -144,40 +142,3 @@ Db.init()
     .then(async () => {
         console.log("Database connected.");
     });
-
-// - - - - - Functions - - - - - //
-
-/**
- * Event listener for HTTP server "error" event.
- */
-function onError(error: NodeJS.ErrnoException) {
-    if (error.syscall !== "listen") {
-        throw error;
-    }
-
-    const bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
-
-    // handle specific listen errors with friendly messages
-    switch (error.code) {
-        case "EACCES":
-            console.error(bind + " requires elevated privileges");
-            process.exit(1);
-            break;
-        case "EADDRINUSE":
-            console.error(bind + " is already in use");
-            process.exit(1);
-            break;
-        default:
-            throw error;
-    }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-function onListening() {
-    const addr = server.address();
-    const bind =
-        typeof addr === "string" ? "pipe " + addr : "port " + addr?.port;
-    console.log("Listening on " + bind);
-}
