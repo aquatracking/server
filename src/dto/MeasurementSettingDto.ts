@@ -1,31 +1,41 @@
-import MeasurementTypeModel from "../model/MeasurementTypeModel";
-import MeasurementSettingModel from "../model/MeasurementSettingModel";
+import { z } from "zod";
 
-export default class MeasurementSettingDto {
-    id: string;
-    aquariumId: string;
-    type: MeasurementTypeModel;
-    visible: boolean;
-    order: number;
-    defaultMode: number;
-    minValue: number;
-    maxValue: number;
-    mailAlert: boolean;
-    notificationAlert: boolean;
+export const MeasurementSettingDtoSchema = z.object({
+    id: z.string().uuid(),
+    aquariumId: z.string(),
+    type: z.any(), // MeasurementTypeModel
+    visible: z.boolean(),
+    order: z.number(),
+    defaultMode: z.number(),
+    minValue: z.number(),
+    maxValue: z.number(),
+    mailAlert: z.boolean(),
+    notificationAlert: z.boolean(),
+});
+export type MeasurementSettingDto = z.infer<typeof MeasurementSettingDtoSchema>;
 
-    constructor(aquariumMeasurementSettingModel: MeasurementSettingModel) {
-        this.id = aquariumMeasurementSettingModel.id;
-        this.aquariumId = aquariumMeasurementSettingModel.aquariumId;
-        this.type = MeasurementTypeModel.getByCode(
-            aquariumMeasurementSettingModel.type,
-        );
-        this.visible = aquariumMeasurementSettingModel.visible;
-        this.order = aquariumMeasurementSettingModel.order;
-        this.defaultMode = aquariumMeasurementSettingModel.defaultMode;
-        this.minValue = aquariumMeasurementSettingModel.minValue;
-        this.maxValue = aquariumMeasurementSettingModel.maxValue;
-        this.mailAlert = aquariumMeasurementSettingModel.mailAlert;
-        this.notificationAlert =
-            aquariumMeasurementSettingModel.notificationAlert;
-    }
-}
+export const extractMeasurementSettingsDto = ({
+    id,
+    aquariumId,
+    type,
+    visible,
+    order,
+    defaultMode,
+    minValue,
+    maxValue,
+    mailAlert,
+    notificationAlert,
+}: MeasurementSettingDto): MeasurementSettingDto => {
+    return {
+        id,
+        aquariumId,
+        type,
+        visible,
+        order,
+        defaultMode,
+        minValue,
+        maxValue,
+        mailAlert,
+        notificationAlert,
+    };
+};

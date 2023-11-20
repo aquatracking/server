@@ -1,17 +1,30 @@
-import { Model } from "sequelize";
-import MeasurementSettingDto from "../dto/MeasurementSettingDto";
+import {
+    CreationOptional,
+    ForeignKey,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute,
+} from "sequelize";
+import { MeasurementSettingDto } from "../dto/MeasurementSettingDto";
+import AquariumModel from "./AquariumModel";
 
-export default class MeasurementSettingModel extends Model {
-    id: string;
-    aquariumId: string;
-    type: string;
-    visible: boolean;
-    order: number;
-    defaultMode: number;
-    minValue: number;
-    maxValue: number;
-    mailAlert: boolean;
-    notificationAlert: boolean;
+export default class MeasurementSettingModel extends Model<
+    InferAttributes<MeasurementSettingModel>,
+    InferCreationAttributes<MeasurementSettingModel>
+> {
+    declare id: CreationOptional<string>;
+    declare type: string;
+    declare visible: CreationOptional<boolean>;
+    declare order: CreationOptional<number>;
+    declare defaultMode: CreationOptional<number>;
+    declare minValue: CreationOptional<number>;
+    declare maxValue: CreationOptional<number>;
+    declare mailAlert: CreationOptional<boolean>;
+    declare notificationAlert: CreationOptional<boolean>;
+
+    declare aquariumId: ForeignKey<AquariumModel["id"]>;
+    declare aquarium?: NonAttribute<AquariumModel>;
 
     static fromDto(dto: MeasurementSettingDto): MeasurementSettingModel {
         return new MeasurementSettingModel({

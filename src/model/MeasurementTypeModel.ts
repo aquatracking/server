@@ -1,7 +1,7 @@
 export default class MeasurementTypeModel {
-    code: string;
-    name: string;
-    unit: string;
+    declare code: string;
+    declare name: string;
+    declare unit: string;
 
     static types = [
         new MeasurementTypeModel("TEMPERATURE", "Température", "°C"),
@@ -19,7 +19,7 @@ export default class MeasurementTypeModel {
         this.unit = unit;
     }
 
-    static getByCode(code: string): MeasurementTypeModel {
+    static getByCode(code: string): MeasurementTypeModel | undefined {
         return MeasurementTypeModel.types.find((t) => t.code === code);
     }
 
