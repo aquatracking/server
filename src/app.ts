@@ -12,7 +12,7 @@ import UserModel from "./model/UserModel";
 import ApplicationModel from "./model/ApplicationModel";
 import { env, ensureValidEnv } from "./env";
 import { tryPromise } from "./utils/tryPromise";
-import { ApplicationTokenDtoSchema } from "./dto/ApplicationTokenDto";
+import { ApplicationTokenDtoSchema } from "./dto/application/applicationTokenDto";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync(".env")) {

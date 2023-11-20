@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UserDtoSchema } from "./UserDto";
+import { UserDtoSchema } from "../UserDto";
 
 export const ApplicationTokenDtoSchema = z.object({
     name: z.string(),
