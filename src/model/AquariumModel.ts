@@ -7,7 +7,7 @@ import {
     NonAttribute,
     Op,
 } from "sequelize";
-import { UserDto } from "../dto/UserDto";
+import { UserDto } from "../dto/user/userDto";
 import BadRequestError from "../errors/BadRequestError";
 import MeasurementModel from "./MeasurementModel";
 import MeasurementTypeModel from "./MeasurementTypeModel";

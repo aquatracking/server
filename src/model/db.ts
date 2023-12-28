@@ -5,6 +5,7 @@ import ApplicationModel from "./ApplicationModel";
 import MeasurementModel from "./MeasurementModel";
 import MeasurementSettingModel from "./MeasurementSettingModel";
 import { env } from "../env";
+import { UserSessionModel } from "./UserSessionModel";
 
 export default class Db {
     private static sequelize: Sequelize;
@@ -222,8 +223,48 @@ export default class Db {
             { sequelize, tableName: "aquarium_measurement_settings" },
         );
 
+        UserSessionModel.init(
+            {
+                id: {
+                    type: DataTypes.UUID,
+                    primaryKey: true,
+                    defaultValue: DataTypes.UUIDV4,
+                },
+                name: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                firstConnectionDate: {
+                    type: DataTypes.DATE,
+                    defaultValue: DataTypes.NOW,
+                    allowNull: false,
+                },
+                lastConnectionDate: {
+                    type: DataTypes.DATE,
+                    defaultValue: DataTypes.NOW,
+                    allowNull: false,
+                },
+                token: {
+                    type: DataTypes.TEXT,
+                    allowNull: false,
+                },
+                userId: {
+                    type: DataTypes.UUID,
+                    allowNull: false,
+                    references: {
+                        model: UserModel,
+                        key: "id",
+                    },
+                },
+            },
+            { sequelize, tableName: "user_sessions" },
+        );
+
         UserModel.hasMany(AquariumModel, { foreignKey: "userId" });
         AquariumModel.belongsTo(UserModel, { foreignKey: "userId" });
+
+        UserModel.hasMany(UserSessionModel, { foreignKey: "userId" });
+        UserSessionModel.belongsTo(UserModel, { foreignKey: "userId" });
 
         await sequelize.sync();
 
