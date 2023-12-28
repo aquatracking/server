@@ -73,6 +73,10 @@ declare module "fastify" {
                     name: "users",
                     description: "Users management",
                 },
+                {
+                    name: "aquariums",
+                    description: "Aquariums management",
+                },
             ],
         },
         transform: jsonSchemaTransform,
@@ -104,14 +108,13 @@ declare module "fastify" {
 
         await fastify.register(import("./routes/users"), {
             prefix: "/users",
-            schema: {
-                tags: ["users"],
-            },
+        });
+
+        await fastify.register(import("./routes/aquariums"), {
+            prefix: "/aquariums",
         });
     });
 
     // fastify.use("/", require("./routes/index"));
-    // fastify.use("/users", require("./routes/users"));
-    // fastify.use("/aquariums", require("./routes/aquariums"));
     //fastify.use("/applications", require("./routes/applications"));
 })();

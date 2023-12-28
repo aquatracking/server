@@ -69,7 +69,6 @@ export default class Db {
                 startedDate: {
                     type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
-                    allowNull: false,
                 },
                 volume: {
                     type: DataTypes.INTEGER,
@@ -77,12 +76,7 @@ export default class Db {
                 },
                 salt: {
                     type: DataTypes.BOOLEAN,
-                    allowNull: false,
                     defaultValue: false,
-                },
-                imageUrl: {
-                    type: DataTypes.STRING,
-                    defaultValue: "",
                 },
                 image: {
                     type: DataTypes.BLOB("long"),

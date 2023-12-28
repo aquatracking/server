@@ -22,13 +22,12 @@ export default class AquariumModel extends Model<
 > {
     declare id: CreationOptional<string>;
     declare name: string;
-    declare description: string;
-    declare startedDate: Date;
+    declare description: CreationOptional<string>;
+    declare startedDate: CreationOptional<Date>;
     declare volume: number;
-    declare salt: boolean;
-    declare imageUrl: string;
-    declare image: Blob;
-    declare archivedDate: Date | null;
+    declare salt: CreationOptional<boolean>;
+    declare image?: CreationOptional<Blob>;
+    declare archivedDate?: CreationOptional<Date | null>;
 
     declare userId: ForeignKey<UserModel["id"]>;
     declare user?: NonAttribute<UserModel>;
@@ -39,109 +38,6 @@ export default class AquariumModel extends Model<
         typeCode: string;
         expire: Date;
     }> = [];
-
-    static async getOneOfUser(id: string, user: UserModel | UserDto) {
-        return AquariumModel.findOne({
-            where: {
-                id: id,
-                userId: user.id,
-            },
-        });
-    }
-
-    static getAllOfUser(user: UserDto) {
-        return AquariumModel.findAll({
-            where: {
-                userId: user.id,
-                archivedDate: null,
-            },
-        });
-    }
-
-    static createOne({
-        user,
-        name,
-        description = "",
-        startedDate,
-        volume,
-        salt = false,
-        imageUrl = "",
-        image,
-    }: {
-        user: UserDto;
-        name: string;
-        description?: string;
-        startedDate: Date;
-        volume: number;
-        salt?: boolean;
-        imageUrl?: string;
-        image: Blob;
-    }) {
-        return AquariumModel.create({
-            userId: user.id,
-            name: name,
-            description: description,
-            startedDate: startedDate,
-            volume: volume,
-            salt: salt,
-            imageUrl: imageUrl,
-            image: image,
-        }).catch((e) => {
-            if (e.parent?.code?.includes("WRONG_VALUE")) {
-                throw new BadRequestError();
-            } else {
-                throw e;
-            }
-        });
-    }
-
-    async getImage() {
-        let aquarium = AquariumModel.findOne({
-            where: {
-                id: this.id,
-            },
-            attributes: ["image"],
-        });
-    }
-
-    static async getImageForOneAquariumOfUser(id: string, user: UserDto) {
-        let aquarium = await AquariumModel.findOne({
-            where: {
-                id: id,
-                userId: user.id,
-            },
-            attributes: ["image"],
-        });
-
-        if (!aquarium) {
-            throw new NotFoundError();
-        }
-
-        return aquarium.getDataValue("image");
-    }
-
-    async updateOne({
-        name,
-        description,
-        image,
-    }: {
-        name: string;
-        description?: string;
-        image: Blob;
-    }) {
-        return AquariumModel.update(
-            {
-                name: name,
-                description: description,
-                image: image,
-            },
-            {
-                where: {
-                    id: this.id,
-                },
-            },
-        );
-    }
 
     async addMeasurement(
         type: MeasurementTypeModel,
@@ -348,31 +244,5 @@ export default class AquariumModel extends Model<
                 },
             );
         }
-    }
-
-    async archiveOne() {
-        return AquariumModel.update(
-            {
-                archivedDate: new Date(),
-            },
-            {
-                where: {
-                    id: this.id,
-                },
-            },
-        );
-    }
-
-    async unarchiveOne() {
-        return AquariumModel.update(
-            {
-                archivedDate: null,
-            },
-            {
-                where: {
-                    id: this.id,
-                },
-            },
-        );
     }
 }
