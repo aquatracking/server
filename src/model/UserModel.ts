@@ -1,11 +1,13 @@
 import {
     CreationOptional,
+    HasManyCreateAssociationMixin,
     HasManyGetAssociationsMixin,
     InferAttributes,
     InferCreationAttributes,
     Model,
 } from "sequelize";
 import AquariumModel from "./AquariumModel";
+import ApplicationModel from "./ApplicationModel";
 
 export default class UserModel extends Model<
     InferAttributes<UserModel>,
@@ -17,4 +19,7 @@ export default class UserModel extends Model<
     declare password: string;
 
     declare getAquariumModels: HasManyGetAssociationsMixin<AquariumModel>;
+
+    declare getApplicationModels: HasManyGetAssociationsMixin<ApplicationModel>;
+    declare createApplicationModel: HasManyCreateAssociationMixin<ApplicationModel>;
 }

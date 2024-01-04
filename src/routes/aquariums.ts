@@ -388,6 +388,7 @@ export default (async (fastify) => {
             schema: {
                 tags: ["aquariums"],
                 description: "Add temperature measurement of aquarium",
+                deprecated: true,
                 params: z.object({
                     id: z.string().uuid(),
                 }),

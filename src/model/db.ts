@@ -270,6 +270,9 @@ export default class Db {
             foreignKey: "aquariumId",
         });
 
+        UserModel.hasMany(ApplicationModel, { foreignKey: "userId" });
+        ApplicationModel.belongsTo(UserModel, { foreignKey: "userId" });
+
         await sequelize.sync();
 
         console.log("Database initialized");

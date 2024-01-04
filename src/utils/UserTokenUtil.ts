@@ -20,4 +20,8 @@ export default class UserTokenUtil {
             expirationTime: "1y",
         });
     }
+
+    static generateApplicationToken(user: UserDto): Promise<string> {
+        return jwt.sign(user, env.APPLICATION_TOKEN_SECRET);
+    }
 }

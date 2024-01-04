@@ -1,6 +1,7 @@
 import {
     CreationOptional,
     ForeignKey,
+    HasOneGetAssociationMixin,
     InferAttributes,
     InferCreationAttributes,
     Model,
@@ -18,5 +19,6 @@ export default class ApplicationModel extends Model<
     declare token: string;
 
     declare userId: ForeignKey<UserModel["id"]>;
-    declare user?: NonAttribute<UserModel>;
+
+    declare getUserModel: HasOneGetAssociationMixin<UserModel>;
 }

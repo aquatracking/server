@@ -1,37 +1,38 @@
-import Router from "express";
+import { FastifyPluginAsync } from "fastify";
+import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { ApplicationCreateDtoSchema } from "../dto/application/applicationCreateDto";
-import { env } from "../env";
-import * as jwt from "../jwt";
-import ApplicationModel from "../model/ApplicationModel";
-import { ApplicationDtoSchema } from "../dto/application/applicationDto";
+import { ApplicationCreatedDtoSchema } from "../dto/application/applicationCreatedDto";
+import UserTokenUtil from "../utils/UserTokenUtil";
+import { UserDtoSchema } from "../dto/user/userDto";
 
-const router = Router();
+export default (async (fastify) => {
+    const instance = fastify.withTypeProvider<ZodTypeProvider>();
 
-/* Post a new application. */
-router.post("/", async function (req, res, next) {
-    const currentUser = req.user!;
-
-    const applicationCreateDto = ApplicationCreateDtoSchema.parse(req.body);
-
-    const signToken = await jwt.sign(
+    instance.post(
+        "/",
         {
-            ...applicationCreateDto,
-            user: currentUser,
+            schema: {
+                tags: ["applications"],
+                description: "Register a new application",
+                body: ApplicationCreateDtoSchema,
+                response: {
+                    201: ApplicationCreatedDtoSchema,
+                },
+            },
         },
-        env.APPLICATION_TOKEN_SECRET,
+        async function (req, res) {
+            const token = await UserTokenUtil.generateApplicationToken(
+                UserDtoSchema.parse(req.user!),
+            );
+
+            const application = await req.user!.createApplicationModel({
+                ...req.body,
+                token: token,
+            });
+
+            res.status(201).send(
+                ApplicationCreatedDtoSchema.parse(application),
+            );
+        },
     );
-
-    ApplicationModel.create({
-        ...applicationCreateDto,
-        token: signToken,
-        userId: currentUser.id,
-    })
-        .then((application) => {
-            res.json(ApplicationDtoSchema.parse(application));
-        })
-        .catch((e) => {
-            next(e);
-        });
-});
-
-module.exports = router;
+}) satisfies FastifyPluginAsync;

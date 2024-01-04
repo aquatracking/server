@@ -13,6 +13,7 @@ import Db from "./model/db";
 
 import { isSessionLoggedIn } from "./auth/isSessionLoggedIn";
 import UserModel from "./model/UserModel";
+import { isApplicationLoggedIn } from "./auth/isApplicationLoggedIn";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync(".env")) {
@@ -77,6 +78,10 @@ declare module "fastify" {
                     name: "aquariums",
                     description: "Aquariums management",
                 },
+                {
+                    name: "applications",
+                    description: "API applications management",
+                },
             ],
         },
         transform: jsonSchemaTransform,
@@ -104,7 +109,10 @@ declare module "fastify" {
     });
 
     await fastify.register(async (instance) => {
-        instance.addHook("preHandler", instance.auth([isSessionLoggedIn]));
+        instance.addHook(
+            "preHandler",
+            instance.auth([isSessionLoggedIn, isApplicationLoggedIn]),
+        );
 
         await fastify.register(import("./routes/users"), {
             prefix: "/users",
@@ -113,8 +121,9 @@ declare module "fastify" {
         await fastify.register(import("./routes/aquariums"), {
             prefix: "/aquariums",
         });
-    });
 
-    // fastify.use("/", require("./routes/index"));
-    //fastify.use("/applications", require("./routes/applications"));
+        await fastify.register(import("./routes/applications"), {
+            prefix: "/applications",
+        });
+    });
 })();
