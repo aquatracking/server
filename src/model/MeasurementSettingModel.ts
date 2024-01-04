@@ -6,7 +6,7 @@ import {
     Model,
     NonAttribute,
 } from "sequelize";
-import { MeasurementSettingDto } from "../dto/MeasurementSettingDto";
+import { MeasurementSettingDto } from "../dto/measurementSetting/MeasurementSettingDto";
 import AquariumModel from "./AquariumModel";
 
 export default class MeasurementSettingModel extends Model<

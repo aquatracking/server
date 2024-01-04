@@ -26,6 +26,10 @@ export default (async (fastify) => {
             },
         },
         async function (req, res) {
+            if (process.env.REGISTER_DISABLED === "true") {
+                return res.status(403).send();
+            }
+
             const hashPassword = await bcrypt.hash(req.body.password, 10);
 
             const user = await UserModel.create({

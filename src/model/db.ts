@@ -260,6 +260,16 @@ export default class Db {
         UserModel.hasMany(UserSessionModel, { foreignKey: "userId" });
         UserSessionModel.belongsTo(UserModel, { foreignKey: "userId" });
 
+        AquariumModel.hasMany(MeasurementModel, { foreignKey: "aquariumId" });
+        MeasurementModel.belongsTo(AquariumModel, { foreignKey: "aquariumId" });
+
+        AquariumModel.hasMany(MeasurementSettingModel, {
+            foreignKey: "aquariumId",
+        });
+        MeasurementSettingModel.belongsTo(AquariumModel, {
+            foreignKey: "aquariumId",
+        });
+
         await sequelize.sync();
 
         console.log("Database initialized");
