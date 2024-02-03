@@ -58,17 +58,17 @@ const servicePortSchema = z.preprocess(
 
 const dotEnvSchema = z.object({
     PORT: portSchema,
-    MARIADB_HOST: z.string().nonempty(),
+    MARIADB_HOST: z.string().min(1),
     MARIADB_PORT: servicePortSchema,
-    MARIADB_USER: z.string().nonempty(),
+    MARIADB_USER: z.string().min(1),
     MARIADB_PASSWORD: z.string(),
-    MARIADB_DATABASE: z.string().nonempty(),
-    ACCESS_TOKEN_SECRET: z.string().nonempty(),
-    REFRESH_TOKEN_SECRET: z.string().nonempty(),
-    APPLICATION_TOKEN_SECRET: z.string().nonempty(),
-    MAIL_HOST: z.string().nonempty(),
+    MARIADB_DATABASE: z.string().min(1),
+    ACCESS_TOKEN_SECRET: z.string().min(1),
+    REFRESH_TOKEN_SECRET: z.string().min(1),
+    APPLICATION_TOKEN_SECRET: z.string().min(1),
+    MAIL_HOST: z.string().min(1),
     MAIL_PORT: servicePortSchema,
-    MAIL_USER: z.string().nonempty(),
+    MAIL_USER: z.string().min(1),
     MAIL_PASS: z.string(),
     MAIL_SSL: z
         .preprocess((value) => value === true, z.boolean())

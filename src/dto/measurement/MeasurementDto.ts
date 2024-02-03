@@ -1,19 +1,10 @@
 import { z } from "zod";
 
 export const MeasurementDtoSchema = z.object({
-    id: z.string(),
+    id: z.string().uuid(),
     type: z.string(),
     value: z.number(),
     measuredAt: z.date(),
 });
 
 export type MeasurementDto = z.infer<typeof MeasurementDtoSchema>;
-
-export const extractMeasurementDto = ({
-    id,
-    type,
-    value,
-    measuredAt,
-}: MeasurementDto) => {
-    return { id, type, value, measuredAt };
-};

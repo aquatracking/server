@@ -7,10 +7,3 @@ export const UserDtoSchema = z.object({
 });
 
 export type UserDto = z.infer<typeof UserDtoSchema>;
-
-/**
- * Extract a UserDto from an object similar to the type UserDto
- **/
-export const extractUserDto = ({ id, username, email }: UserDto) => {
-    return { id, username, email };
-};
