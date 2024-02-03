@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from "fastify";
 import { UserCreateDtoSchema } from "../dto/user/userCreateDto";
 import { UserDtoSchema } from "../dto/user/userDto";
-import UserModel from "../model/UserModel";
+import { UserModel } from "../model/UserModel";
 
 import bcrypt from "bcryptjs";
 import { ZodTypeProvider } from "fastify-type-provider-zod";

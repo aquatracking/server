@@ -1,5 +1,5 @@
 import { CreationOptional, HasOneGetAssociationMixin, Model } from "sequelize";
-import UserModel from "./UserModel";
+import { UserModel } from "./UserModel";
 
 export class UserSessionModel extends Model {
     declare id: CreationOptional<string>;
