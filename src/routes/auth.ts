@@ -9,6 +9,7 @@ import { z } from "zod";
 import MailSender from "../agents/MailSender";
 import { UserSessionModel } from "../model/UserSessionModel";
 import UserTokenUtil from "../utils/UserTokenUtil";
+import { env } from "../env";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -26,7 +27,7 @@ export default (async (fastify) => {
             },
         },
         async function (req, res) {
-            if (process.env.REGISTER_DISABLED === "true") {
+            if (!env.REGISTRATION_ENABLED) {
                 return res.status(403).send();
             }
 

@@ -8,23 +8,24 @@ import { z } from "zod";
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
 
-    instance.get(
-        "/",
-        {
-            schema: {
-                tags: ["users"],
-                description: "Get all users",
-                response: {
-                    200: UserDtoSchema.array(),
-                },
-            },
-        },
-        async function () {
-            const users = await UserModel.findAll();
+    // TODO: to move in a admin dedicated route
+    // instance.get(
+    //     "/",
+    //     {
+    //         schema: {
+    //             tags: ["users"],
+    //             description: "Get all users",
+    //             response: {
+    //                 200: UserDtoSchema.array(),
+    //             },
+    //         },
+    //     },
+    //     async function () {
+    //         const users = await UserModel.findAll();
 
-            return users.map((user) => UserDtoSchema.parse(user));
-        },
-    );
+    //         return users.map((user) => UserDtoSchema.parse(user));
+    //     },
+    // );
 
     instance.get(
         "/:id",

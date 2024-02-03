@@ -2,6 +2,7 @@ import { FastifyAuthFunction } from "@fastify/auth";
 import { NotLoggedError } from "../errors/NotLoggedError";
 import * as jwt from "../jwt";
 import { UserSessionModel } from "../model/UserSessionModel";
+import { env } from "../env";
 
 export const isSessionLoggedIn = (async (req, res) => {
     const token = req.cookies["session-token"];
@@ -10,7 +11,7 @@ export const isSessionLoggedIn = (async (req, res) => {
         throw new NotLoggedError();
     }
 
-    const jwtUser = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!);
+    const jwtUser = await jwt.verify(token, env.ACCESS_TOKEN_SECRET);
 
     const session = await UserSessionModel.findOne({
         where: {
