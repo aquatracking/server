@@ -2,7 +2,7 @@ import { DataTypes, Sequelize } from "sequelize";
 import { env } from "../env";
 import { ApplicationModel } from "./ApplicationModel";
 import { AquariumModel } from "./AquariumModel";
-import { BiotopModel } from "./BiotopModel";
+import { BiotopeModel } from "./BiotopeModel";
 import { MeasurementModel } from "./MeasurementModel";
 import { MeasurementSubscriptionModel } from "./MeasurementSubscriptionModel";
 import { MeasurementTypeModel } from "./MeasurementTypeModel";
@@ -125,7 +125,7 @@ export default class Db {
         UserModel.hasMany(ApplicationModel, { foreignKey: "userId" });
         ApplicationModel.belongsTo(UserModel, { foreignKey: "userId" });
 
-        BiotopModel.init(
+        BiotopeModel.init(
             {
                 id: {
                     type: DataTypes.UUID,
@@ -166,18 +166,18 @@ export default class Db {
                     },
                 },
             },
-            { sequelize, tableName: "biotops" },
+            { sequelize, tableName: "biotopes" },
         );
-        UserModel.hasMany(BiotopModel, { foreignKey: "userId" });
-        BiotopModel.belongsTo(UserModel, { foreignKey: "userId" });
+        UserModel.hasMany(BiotopeModel, { foreignKey: "userId" });
+        BiotopeModel.belongsTo(UserModel, { foreignKey: "userId" });
 
         AquariumModel.init(
             {
-                biotopId: {
+                biotopeId: {
                     type: DataTypes.UUID,
                     primaryKey: true,
                     references: {
-                        model: BiotopModel,
+                        model: BiotopeModel,
                         key: "id",
                     },
                 },
@@ -192,8 +192,12 @@ export default class Db {
             },
             { sequelize, tableName: "aquarium" },
         );
-        BiotopModel.hasOne(AquariumModel, { foreignKey: "biotopId" });
-        AquariumModel.belongsTo(BiotopModel, { foreignKey: "biotopId" });
+        BiotopeModel.hasOne(AquariumModel, {
+            foreignKey: "biotopeId",
+        });
+        AquariumModel.belongsTo(BiotopeModel, {
+            foreignKey: "biotopeId",
+        });
 
         MeasurementTypeModel.init(
             {
@@ -218,11 +222,11 @@ export default class Db {
 
         MeasurementSubscriptionModel.init(
             {
-                biotopId: {
+                biotopeId: {
                     type: DataTypes.UUID,
                     primaryKey: true,
                     references: {
-                        model: BiotopModel,
+                        model: BiotopeModel,
                         key: "id",
                     },
                 },
@@ -243,11 +247,11 @@ export default class Db {
             },
             { sequelize, tableName: "measurement_subscriptions" },
         );
-        BiotopModel.hasMany(MeasurementSubscriptionModel, {
-            foreignKey: "biotopId",
+        BiotopeModel.hasMany(MeasurementSubscriptionModel, {
+            foreignKey: "biotopeId",
         });
-        MeasurementSubscriptionModel.belongsTo(BiotopModel, {
-            foreignKey: "biotopId",
+        MeasurementSubscriptionModel.belongsTo(BiotopeModel, {
+            foreignKey: "biotopeId",
         });
         MeasurementTypeModel.hasMany(MeasurementSubscriptionModel, {
             foreignKey: "measurementTypeCode",
@@ -263,10 +267,10 @@ export default class Db {
                     primaryKey: true,
                     defaultValue: DataTypes.UUIDV4,
                 },
-                biotopId: {
+                biotopeId: {
                     type: DataTypes.UUID,
                     references: {
-                        model: BiotopModel,
+                        model: BiotopeModel,
                         key: "id",
                     },
                 },
@@ -289,8 +293,8 @@ export default class Db {
             },
             { sequelize, tableName: "measurements" },
         );
-        BiotopModel.hasMany(MeasurementModel, { foreignKey: "biotopId" });
-        MeasurementModel.belongsTo(BiotopModel, { foreignKey: "biotopId" });
+        BiotopeModel.hasMany(MeasurementModel, { foreignKey: "biotopeId" });
+        MeasurementModel.belongsTo(BiotopeModel, { foreignKey: "biotopeId" });
         MeasurementTypeModel.hasMany(MeasurementModel, {
             foreignKey: "measurementTypeCode",
         });

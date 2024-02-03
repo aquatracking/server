@@ -5,13 +5,13 @@ import {
     InferCreationAttributes,
     Model,
 } from "sequelize";
-import { BiotopModel } from "./BiotopModel";
+import { BiotopeModel } from "./BiotopeModel";
 
 export class AquariumModel extends Model<
     InferAttributes<AquariumModel>,
     InferCreationAttributes<AquariumModel>
 > {
-    declare biotopId: ForeignKey<BiotopModel["id"]>;
+    declare biotopeId: ForeignKey<BiotopeModel["id"]>;
     declare volume: number;
     declare salt: CreationOptional<boolean>;
 }

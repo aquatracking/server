@@ -7,7 +7,7 @@ import {
     Model,
 } from "sequelize";
 import { ApplicationModel } from "./ApplicationModel";
-import { BiotopModel } from "./BiotopModel";
+import { BiotopeModel } from "./BiotopeModel";
 
 export class UserModel extends Model<
     InferAttributes<UserModel>,
@@ -18,7 +18,8 @@ export class UserModel extends Model<
     declare email: string;
     declare password: string;
 
-    declare getBiotopModels: HasManyGetAssociationsMixin<BiotopModel>;
+    declare getBiotopeModels: HasManyGetAssociationsMixin<BiotopeModel>;
+    declare createBiotopeModel: HasManyCreateAssociationMixin<BiotopeModel>;
 
     declare getApplicationModels: HasManyGetAssociationsMixin<ApplicationModel>;
     declare createApplicationModel: HasManyCreateAssociationMixin<ApplicationModel>;

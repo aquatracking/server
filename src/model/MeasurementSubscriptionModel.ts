@@ -5,7 +5,7 @@ import {
     InferCreationAttributes,
     Model,
 } from "sequelize";
-import { BiotopModel } from "./BiotopModel";
+import { BiotopeModel } from "./BiotopeModel";
 import { MeasurementTypeModel } from "./MeasurementTypeModel";
 
 export class MeasurementSubscriptionModel extends Model<
@@ -13,7 +13,7 @@ export class MeasurementSubscriptionModel extends Model<
     InferCreationAttributes<MeasurementSubscriptionModel>
 > {
     // Composed primary key
-    declare biotopId: ForeignKey<BiotopModel["id"]>;
+    declare biotopeId: ForeignKey<BiotopeModel["id"]>;
     declare measurementTypeCode: ForeignKey<MeasurementTypeModel["code"]>;
 
     declare min?: CreationOptional<number>;

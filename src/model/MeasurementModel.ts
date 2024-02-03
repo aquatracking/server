@@ -5,7 +5,7 @@ import {
     InferCreationAttributes,
     Model,
 } from "sequelize";
-import { BiotopModel } from "./BiotopModel";
+import { BiotopeModel } from "./BiotopeModel";
 import { MeasurementTypeModel } from "./MeasurementTypeModel";
 
 export class MeasurementModel extends Model<
@@ -14,7 +14,7 @@ export class MeasurementModel extends Model<
 > {
     declare id: CreationOptional<string>;
 
-    declare biotopId: ForeignKey<BiotopModel["id"]>;
+    declare biotopeId: ForeignKey<BiotopeModel["id"]>;
     declare measurementTypeCode: ForeignKey<MeasurementTypeModel["code"]>;
 
     declare value: number;

@@ -11,7 +11,10 @@ import {
 import { ensureValidEnv, env } from "./env";
 import Db from "./model/db";
 
+import { isApplicationLoggedIn } from "./auth/isApplicationLoggedIn";
+import { isSessionLoggedIn } from "./auth/isSessionLoggedIn";
 import { UserModel } from "./model/UserModel";
+import { BiotopeModel } from "./model/BiotopeModel";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync(".env")) {
@@ -32,6 +35,7 @@ ensureValidEnv();
 declare module "fastify" {
     export interface FastifyRequest {
         user?: UserModel;
+        biotope?: BiotopeModel;
     }
 }
 
@@ -102,26 +106,26 @@ declare module "fastify" {
     await fastify.register(import("@fastify/cookie"));
 
     // - - - - - Routes - - - - - //
-    // await fastify.register(import("./routes/auth"), {
-    //     prefix: "/auth",
-    // });
+    await fastify.register(import("./routes/auth"), {
+        prefix: "/auth",
+    });
 
-    // await fastify.register(async (instance) => {
-    //     instance.addHook(
-    //         "preHandler",
-    //         instance.auth([isSessionLoggedIn, isApplicationLoggedIn]),
-    //     );
+    await fastify.register(async (instance) => {
+        instance.addHook(
+            "preHandler",
+            instance.auth([isSessionLoggedIn, isApplicationLoggedIn]),
+        );
 
-    //     await fastify.register(import("./routes/users"), {
-    //         prefix: "/users",
-    //     });
+        await fastify.register(import("./routes/users"), {
+            prefix: "/users",
+        });
 
-    //     await fastify.register(import("./routes/aquariums"), {
-    //         prefix: "/aquariums",
-    //     });
+        await fastify.register(import("./routes/aquariums"), {
+            prefix: "/aquariums",
+        });
 
-    //     await fastify.register(import("./routes/applications"), {
-    //         prefix: "/applications",
-    //     });
-    // });
+        await fastify.register(import("./routes/applications"), {
+            prefix: "/applications",
+        });
+    });
 })();
