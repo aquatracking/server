@@ -1,5 +1,5 @@
 import * as nodemailer from "nodemailer";
-import UserModel from "../model/UserModel";
+import { UserModel } from "../model/UserModel";
 import { env } from "../env";
 
 export default class MailSender {

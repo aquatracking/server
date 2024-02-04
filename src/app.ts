@@ -13,8 +13,9 @@ import Db from "./model/db";
 
 import { isApplicationLoggedIn } from "./auth/isApplicationLoggedIn";
 import { isSessionLoggedIn } from "./auth/isSessionLoggedIn";
-import { UserModel } from "./model/UserModel";
 import { BiotopeModel } from "./model/BiotopeModel";
+import { MeasurementTypeModel } from "./model/MeasurementTypeModel";
+import { UserModel } from "./model/UserModel";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync(".env")) {
@@ -36,6 +37,7 @@ declare module "fastify" {
     export interface FastifyRequest {
         user?: UserModel;
         biotope?: BiotopeModel;
+        measurementType?: MeasurementTypeModel;
     }
 }
 
@@ -120,12 +122,12 @@ declare module "fastify" {
             prefix: "/users",
         });
 
-        await fastify.register(import("./routes/aquariums"), {
-            prefix: "/aquariums",
-        });
-
         await fastify.register(import("./routes/applications"), {
             prefix: "/applications",
+        });
+
+        await fastify.register(import("./routes/aquariums"), {
+            prefix: "/aquariums",
         });
     });
 })();

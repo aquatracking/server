@@ -1,6 +1,8 @@
 import {
     CreationOptional,
     ForeignKey,
+    HasManyCreateAssociationMixin,
+    HasManyGetAssociationsMixin,
     HasOneCreateAssociationMixin,
     HasOneGetAssociationMixin,
     InferAttributes,
@@ -9,6 +11,7 @@ import {
     NonAttribute,
 } from "sequelize";
 import { AquariumModel } from "./AquariumModel";
+import { MeasurementModel } from "./MeasurementModel";
 import { UserModel } from "./UserModel";
 
 export class BiotopeModel extends Model<
@@ -27,6 +30,9 @@ export class BiotopeModel extends Model<
 
     declare getAquariumModel: HasOneGetAssociationMixin<AquariumModel>;
     declare createAquariumModel: HasOneCreateAssociationMixin<AquariumModel>;
+
+    declare createMeasurementModel: HasManyCreateAssociationMixin<MeasurementModel>;
+    declare getMeasurementModels: HasManyGetAssociationsMixin<MeasurementModel>;
 
     declare AquariumModel?: NonAttribute<AquariumModel>;
 }
