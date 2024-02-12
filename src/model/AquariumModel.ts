@@ -12,6 +12,5 @@ export class AquariumModel extends Model<
     InferCreationAttributes<AquariumModel>
 > {
     declare biotopeId: ForeignKey<BiotopeModel["id"]>;
-    declare volume: number;
     declare salt: CreationOptional<boolean>;
 }

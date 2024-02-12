@@ -157,6 +157,9 @@ export default class Db {
                 archivedDate: {
                     type: DataTypes.DATE,
                 },
+                volume: {
+                    type: DataTypes.INTEGER,
+                },
                 userId: {
                     type: DataTypes.UUID,
                     allowNull: false,
@@ -180,10 +183,6 @@ export default class Db {
                         model: BiotopeModel,
                         key: "id",
                     },
-                },
-                volume: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
                 },
                 salt: {
                     type: DataTypes.BOOLEAN,

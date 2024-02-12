@@ -8,6 +8,7 @@ export const BiotopeDtoSchema = z
         startedDate: z.date(),
         imageUrl: z.string().default(""),
         archivedDate: z.date().optional().nullable(),
+        volume: z.number().optional().nullable(),
     })
     .transform((data) => {
         return {

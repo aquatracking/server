@@ -5,6 +5,7 @@ export const BiotopeCreateDtoSchema = z.object({
     description: z.string().min(0).max(1000).optional(),
     startedDate: z.coerce.date().optional(),
     image: z.custom<Blob>().optional(),
+    volume: z.number().optional(),
 });
 
 export type BiotopeCreateDto = z.infer<typeof BiotopeCreateDtoSchema>;

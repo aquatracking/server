@@ -25,6 +25,7 @@ export class BiotopeModel extends Model<
     declare image: CreationOptional<Blob | null>;
     declare startedDate: CreationOptional<Date>;
     declare archivedDate: CreationOptional<Date | null>;
+    declare volume: CreationOptional<number | null>;
 
     declare userId: ForeignKey<UserModel["id"]>;
 

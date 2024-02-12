@@ -3,7 +3,6 @@ import { BiotopeDtoSchema } from "../biotope/BiotopeDto";
 
 export const AquariumDtoSchema = BiotopeDtoSchema.and(
     z.object({
-        volume: z.number(),
         salt: z.boolean(),
     }),
 );
