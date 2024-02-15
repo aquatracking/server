@@ -8,6 +8,7 @@ import { MeasurementSubscriptionModel } from "./MeasurementSubscriptionModel";
 import { MeasurementTypeModel } from "./MeasurementTypeModel";
 import { UserModel } from "./UserModel";
 import { UserSessionModel } from "./UserSessionModel";
+import { TerrariumModel } from "./TerrariumModel";
 
 export default class Db {
     private static sequelize: Sequelize;
@@ -195,6 +196,30 @@ export default class Db {
             foreignKey: "biotopeId",
         });
         AquariumModel.belongsTo(BiotopeModel, {
+            foreignKey: "biotopeId",
+        });
+
+        TerrariumModel.init(
+            {
+                biotopeId: {
+                    type: DataTypes.UUID,
+                    primaryKey: true,
+                    references: {
+                        model: BiotopeModel,
+                        key: "id",
+                    },
+                },
+                wet: {
+                    type: DataTypes.BOOLEAN,
+                    defaultValue: false,
+                },
+            },
+            { sequelize, tableName: "terrarium" },
+        );
+        BiotopeModel.hasOne(TerrariumModel, {
+            foreignKey: "biotopeId",
+        });
+        TerrariumModel.belongsTo(BiotopeModel, {
             foreignKey: "biotopeId",
         });
 
