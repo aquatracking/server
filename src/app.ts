@@ -126,7 +126,7 @@ declare module "fastify" {
             prefix: "/applications",
         });
 
-        await fastify.register(import("./routes/aquariums"), {
+        await fastify.register(import("./routes/biotopes/aquariums"), {
             prefix: "/aquariums",
         });
     });

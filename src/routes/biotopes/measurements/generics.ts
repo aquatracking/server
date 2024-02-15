@@ -2,9 +2,9 @@ import { FastifyPluginAsync } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { Op } from "sequelize";
 import { z } from "zod";
-import { MeasurementCreateDtoSchema } from "../dto/measurement/MeasurementCreateDto";
-import { MeasurementDtoSchema } from "../dto/measurement/MeasurementDto";
-import { MeasurementModel } from "../model/MeasurementModel";
+import { MeasurementCreateDtoSchema } from "../../../dto/measurement/MeasurementCreateDto";
+import { MeasurementDtoSchema } from "../../../dto/measurement/MeasurementDto";
+import { MeasurementModel } from "../../../model/MeasurementModel";
 
 const measurementsQueryStringSchema = z.object({
     measurementTypeCode: z

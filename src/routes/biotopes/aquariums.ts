@@ -2,11 +2,11 @@ import { FastifyPluginAsync } from "fastify";
 
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { AquariumCreateDtoSchema } from "../dto/aquarium/AquariumCreateDto";
-import { AquariumDtoSchema } from "../dto/aquarium/AquariumDto";
-import { AquariumUpdateDtoSchema } from "../dto/aquarium/AquariumUpdateDto";
-import { AquariumModel } from "../model/AquariumModel";
-import { BiotopeModel } from "../model/BiotopeModel";
+import { AquariumCreateDtoSchema } from "../../dto/aquarium/AquariumCreateDto";
+import { AquariumDtoSchema } from "../../dto/aquarium/AquariumDto";
+import { AquariumUpdateDtoSchema } from "../../dto/aquarium/AquariumUpdateDto";
+import { AquariumModel } from "../../model/AquariumModel";
+import { BiotopeModel } from "../../model/BiotopeModel";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -131,27 +131,6 @@ export default (async (fastify) => {
                 },
             );
 
-            instance.get(
-                "/image",
-                {
-                    schema: {
-                        tags: ["aquariums"],
-                        description: "Get an aquarium image",
-                        params: z.object({
-                            id: z.string().uuid(),
-                        }),
-                        response: {
-                            200: z.custom<Blob>().nullable(),
-                        },
-                    },
-                },
-                async function (req, res) {
-                    const biotope = req.biotope!;
-
-                    res.send(biotope.image);
-                },
-            );
-
             instance.patch(
                 "/",
                 {
@@ -179,29 +158,6 @@ export default (async (fastify) => {
                             ...biotope.AquariumModel!.dataValues,
                         }),
                     );
-                },
-            );
-
-            instance.delete(
-                "/",
-                {
-                    schema: {
-                        tags: ["aquariums"],
-                        description: "Delete an aquarium",
-                        params: z.object({
-                            id: z.string().uuid(),
-                        }),
-                        response: {
-                            204: z.null(),
-                        },
-                    },
-                },
-                async function (req, res) {
-                    const biotope = req.biotope!;
-
-                    await biotope.destroy();
-
-                    res.status(204).send();
                 },
             );
 
@@ -297,9 +253,7 @@ export default (async (fastify) => {
                 },
             );
 
-            await fastify.register(import("./biotopesMeasurements"), {
-                prefix: "/measurements",
-            });
+            await fastify.register(import("./generics"));
         },
         {
             prefix: "/:id",
