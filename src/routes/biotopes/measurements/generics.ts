@@ -21,7 +21,7 @@ const measurementsQueryStringSchema = z.object({
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
 
-    let schemaBiotopeType = /\/(\w+)s\/:id\/measurements/.exec(
+    const schemaBiotopeType = /\/(\w+)s\/:id\/measurements/.exec(
         instance.prefix,
     )?.[1];
     if (!schemaBiotopeType) return;

@@ -4,7 +4,7 @@ import { env } from "../env";
 
 export default class MailSender {
     static send(to: string, subject: string, text: string) {
-        let transporter = nodemailer.createTransport({
+        const transporter = nodemailer.createTransport({
             host: env.MAIL_HOST,
             port: env.MAIL_PORT,
             secure: env.MAIL_SSL,

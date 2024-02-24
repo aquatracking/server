@@ -27,7 +27,7 @@ export default class Db {
         await Db.sequelize.authenticate();
         console.log("Connected to database");
 
-        let sequelize = Db.sequelize;
+        const sequelize = Db.sequelize;
 
         UserModel.init(
             {

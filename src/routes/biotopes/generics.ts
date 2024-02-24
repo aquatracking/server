@@ -5,7 +5,7 @@ import { z } from "zod";
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
 
-    let schemaBiotopeType = /\/(\w+)s\/:id/.exec(instance.prefix)?.[1];
+    const schemaBiotopeType = /\/(\w+)s\/:id/.exec(instance.prefix)?.[1];
     if (!schemaBiotopeType) return;
 
     instance.get(
