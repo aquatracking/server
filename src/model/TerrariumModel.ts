@@ -7,10 +7,10 @@ import {
 } from "sequelize";
 import { BiotopeModel } from "./BiotopeModel";
 
-export class AquariumModel extends Model<
-    InferAttributes<AquariumModel>,
-    InferCreationAttributes<AquariumModel>
+export class TerrariumModel extends Model<
+    InferAttributes<TerrariumModel>,
+    InferCreationAttributes<TerrariumModel>
 > {
     declare biotopeId: ForeignKey<BiotopeModel["id"]>;
-    declare salt: CreationOptional<boolean>;
+    declare wet: CreationOptional<boolean>;
 }

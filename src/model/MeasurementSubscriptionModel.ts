@@ -8,15 +8,14 @@ import {
 import { BiotopeModel } from "./BiotopeModel";
 import { MeasurementTypeModel } from "./MeasurementTypeModel";
 
-export class MeasurementModel extends Model<
-    InferAttributes<MeasurementModel>,
-    InferCreationAttributes<MeasurementModel>
+export class MeasurementSubscriptionModel extends Model<
+    InferAttributes<MeasurementSubscriptionModel>,
+    InferCreationAttributes<MeasurementSubscriptionModel>
 > {
-    declare id: CreationOptional<string>;
-
+    // Composed primary key
     declare biotopeId: ForeignKey<BiotopeModel["id"]>;
     declare measurementTypeCode: ForeignKey<MeasurementTypeModel["code"]>;
 
-    declare value: number;
-    declare measuredAt: CreationOptional<Date>;
+    declare min?: CreationOptional<number>;
+    declare max?: CreationOptional<number>;
 }

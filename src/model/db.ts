@@ -1,11 +1,14 @@
 import { DataTypes, Sequelize } from "sequelize";
-import UserModel from "./UserModel";
-import AquariumModel from "./AquariumModel";
-import ApplicationModel from "./ApplicationModel";
-import MeasurementModel from "./MeasurementModel";
-import MeasurementSettingModel from "./MeasurementSettingModel";
 import { env } from "../env";
+import { ApplicationModel } from "./ApplicationModel";
+import { AquariumModel } from "./AquariumModel";
+import { BiotopeModel } from "./BiotopeModel";
+import { MeasurementModel } from "./MeasurementModel";
+import { MeasurementSubscriptionModel } from "./MeasurementSubscriptionModel";
+import { MeasurementTypeModel } from "./MeasurementTypeModel";
+import { UserModel } from "./UserModel";
 import { UserSessionModel } from "./UserSessionModel";
+import { TerrariumModel } from "./TerrariumModel";
 
 export default class Db {
     private static sequelize: Sequelize;
@@ -24,7 +27,7 @@ export default class Db {
         await Db.sequelize.authenticate();
         console.log("Connected to database");
 
-        let sequelize = Db.sequelize;
+        const sequelize = Db.sequelize;
 
         UserModel.init(
             {
@@ -49,172 +52,6 @@ export default class Db {
                 },
             },
             { sequelize, tableName: "users" },
-        );
-
-        AquariumModel.init(
-            {
-                id: {
-                    type: DataTypes.UUID,
-                    primaryKey: true,
-                    defaultValue: DataTypes.UUIDV4,
-                },
-                name: {
-                    type: DataTypes.STRING,
-                    allowNull: false,
-                },
-                description: {
-                    type: DataTypes.STRING,
-                    defaultValue: "",
-                },
-                startedDate: {
-                    type: DataTypes.DATE,
-                    defaultValue: DataTypes.NOW,
-                },
-                volume: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                },
-                salt: {
-                    type: DataTypes.BOOLEAN,
-                    defaultValue: false,
-                },
-                image: {
-                    type: DataTypes.BLOB("long"),
-                    allowNull: true,
-                },
-                userId: {
-                    type: DataTypes.UUID,
-                    allowNull: false,
-                    references: {
-                        model: UserModel,
-                        key: "id",
-                    },
-                },
-                archivedDate: {
-                    type: DataTypes.DATE,
-                    allowNull: true,
-                },
-            },
-            { sequelize, tableName: "aquariums" },
-        );
-
-        ApplicationModel.init(
-            {
-                id: {
-                    type: DataTypes.UUID,
-                    primaryKey: true,
-                    defaultValue: DataTypes.UUIDV4,
-                },
-                name: {
-                    type: DataTypes.STRING,
-                    allowNull: false,
-                },
-                description: {
-                    type: DataTypes.STRING,
-                    defaultValue: "",
-                },
-                token: {
-                    type: DataTypes.TEXT,
-                    allowNull: false,
-                },
-                userId: {
-                    type: DataTypes.UUID,
-                    allowNull: false,
-                    references: {
-                        model: UserModel,
-                        key: "id",
-                    },
-                },
-            },
-            { sequelize, tableName: "applications" },
-        );
-
-        MeasurementModel.init(
-            {
-                id: {
-                    type: DataTypes.UUID,
-                    primaryKey: true,
-                    defaultValue: DataTypes.UUIDV4,
-                },
-                type: {
-                    type: DataTypes.STRING,
-                    allowNull: false,
-                },
-                value: {
-                    type: DataTypes.DOUBLE,
-                    allowNull: false,
-                },
-                measuredAt: {
-                    type: DataTypes.DATE,
-                    defaultValue: DataTypes.NOW,
-                    allowNull: false,
-                },
-                aquariumId: {
-                    type: DataTypes.UUID,
-                    allowNull: false,
-                    references: {
-                        model: AquariumModel,
-                        key: "id",
-                    },
-                },
-            },
-            { sequelize, tableName: "measurements" },
-        );
-
-        MeasurementSettingModel.init(
-            {
-                id: {
-                    type: DataTypes.UUID,
-                    primaryKey: true,
-                    defaultValue: DataTypes.UUIDV4,
-                },
-                aquariumId: {
-                    type: DataTypes.UUID,
-                    allowNull: false,
-                    references: {
-                        model: AquariumModel,
-                        key: "id",
-                    },
-                },
-                type: {
-                    type: DataTypes.STRING,
-                    allowNull: false,
-                },
-                visible: {
-                    type: DataTypes.BOOLEAN,
-                    allowNull: false,
-                    defaultValue: false,
-                },
-                order: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                    defaultValue: 0,
-                },
-                defaultMode: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                    defaultValue: 3,
-                },
-                minValue: {
-                    type: DataTypes.DOUBLE,
-                    allowNull: true,
-                },
-                maxValue: {
-                    type: DataTypes.DOUBLE,
-                    allowNull: true,
-                },
-                mailAlert: {
-                    type: DataTypes.BOOLEAN,
-                    allowNull: false,
-                    defaultValue: false,
-                },
-                notificationAlert: {
-                    type: DataTypes.BOOLEAN,
-                    allowNull: false,
-                    defaultValue: false,
-                },
-            },
-            { sequelize, tableName: "aquarium_measurement_settings" },
         );
 
         UserSessionModel.init(
@@ -253,25 +90,241 @@ export default class Db {
             },
             { sequelize, tableName: "user_sessions" },
         );
-
-        UserModel.hasMany(AquariumModel, { foreignKey: "userId" });
-        AquariumModel.belongsTo(UserModel, { foreignKey: "userId" });
-
         UserModel.hasMany(UserSessionModel, { foreignKey: "userId" });
         UserSessionModel.belongsTo(UserModel, { foreignKey: "userId" });
 
-        AquariumModel.hasMany(MeasurementModel, { foreignKey: "aquariumId" });
-        MeasurementModel.belongsTo(AquariumModel, { foreignKey: "aquariumId" });
-
-        AquariumModel.hasMany(MeasurementSettingModel, {
-            foreignKey: "aquariumId",
-        });
-        MeasurementSettingModel.belongsTo(AquariumModel, {
-            foreignKey: "aquariumId",
-        });
-
+        ApplicationModel.init(
+            {
+                id: {
+                    type: DataTypes.UUID,
+                    primaryKey: true,
+                    defaultValue: DataTypes.UUIDV4,
+                },
+                name: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                description: {
+                    type: DataTypes.STRING,
+                    defaultValue: "",
+                },
+                token: {
+                    type: DataTypes.TEXT,
+                    allowNull: false,
+                },
+                userId: {
+                    type: DataTypes.UUID,
+                    allowNull: false,
+                    references: {
+                        model: UserModel,
+                        key: "id",
+                    },
+                },
+            },
+            { sequelize, tableName: "applications" },
+        );
         UserModel.hasMany(ApplicationModel, { foreignKey: "userId" });
         ApplicationModel.belongsTo(UserModel, { foreignKey: "userId" });
+
+        BiotopeModel.init(
+            {
+                id: {
+                    type: DataTypes.UUID,
+                    primaryKey: true,
+                    defaultValue: DataTypes.UUIDV4,
+                },
+                name: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                description: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                    defaultValue: "",
+                },
+                type: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                image: {
+                    type: DataTypes.BLOB,
+                    allowNull: true,
+                },
+                startedDate: {
+                    type: DataTypes.DATE,
+                    allowNull: false,
+                    defaultValue: DataTypes.NOW,
+                },
+                archivedDate: {
+                    type: DataTypes.DATE,
+                },
+                volume: {
+                    type: DataTypes.INTEGER,
+                },
+                userId: {
+                    type: DataTypes.UUID,
+                    allowNull: false,
+                    references: {
+                        model: UserModel,
+                        key: "id",
+                    },
+                },
+            },
+            { sequelize, tableName: "biotopes" },
+        );
+        UserModel.hasMany(BiotopeModel, { foreignKey: "userId" });
+        BiotopeModel.belongsTo(UserModel, { foreignKey: "userId" });
+
+        AquariumModel.init(
+            {
+                biotopeId: {
+                    type: DataTypes.UUID,
+                    primaryKey: true,
+                    references: {
+                        model: BiotopeModel,
+                        key: "id",
+                    },
+                },
+                salt: {
+                    type: DataTypes.BOOLEAN,
+                    defaultValue: false,
+                },
+            },
+            { sequelize, tableName: "aquarium" },
+        );
+        BiotopeModel.hasOne(AquariumModel, {
+            foreignKey: "biotopeId",
+        });
+        AquariumModel.belongsTo(BiotopeModel, {
+            foreignKey: "biotopeId",
+        });
+
+        TerrariumModel.init(
+            {
+                biotopeId: {
+                    type: DataTypes.UUID,
+                    primaryKey: true,
+                    references: {
+                        model: BiotopeModel,
+                        key: "id",
+                    },
+                },
+                wet: {
+                    type: DataTypes.BOOLEAN,
+                    defaultValue: false,
+                },
+            },
+            { sequelize, tableName: "terrarium" },
+        );
+        BiotopeModel.hasOne(TerrariumModel, {
+            foreignKey: "biotopeId",
+        });
+        TerrariumModel.belongsTo(BiotopeModel, {
+            foreignKey: "biotopeId",
+        });
+
+        MeasurementTypeModel.init(
+            {
+                code: {
+                    type: DataTypes.STRING,
+                    primaryKey: true,
+                },
+                name: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                unit: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                description: {
+                    type: DataTypes.STRING,
+                },
+            },
+            { sequelize, tableName: "measurement_types" },
+        );
+
+        MeasurementSubscriptionModel.init(
+            {
+                biotopeId: {
+                    type: DataTypes.UUID,
+                    primaryKey: true,
+                    references: {
+                        model: BiotopeModel,
+                        key: "id",
+                    },
+                },
+                measurementTypeCode: {
+                    type: DataTypes.STRING,
+                    primaryKey: true,
+                    references: {
+                        model: MeasurementTypeModel,
+                        key: "code",
+                    },
+                },
+                min: {
+                    type: DataTypes.DOUBLE,
+                },
+                max: {
+                    type: DataTypes.DOUBLE,
+                },
+            },
+            { sequelize, tableName: "measurement_subscriptions" },
+        );
+        BiotopeModel.hasMany(MeasurementSubscriptionModel, {
+            foreignKey: "biotopeId",
+        });
+        MeasurementSubscriptionModel.belongsTo(BiotopeModel, {
+            foreignKey: "biotopeId",
+        });
+        MeasurementTypeModel.hasMany(MeasurementSubscriptionModel, {
+            foreignKey: "measurementTypeCode",
+        });
+        MeasurementSubscriptionModel.belongsTo(MeasurementTypeModel, {
+            foreignKey: "measurementTypeCode",
+        });
+
+        MeasurementModel.init(
+            {
+                id: {
+                    type: DataTypes.UUID,
+                    primaryKey: true,
+                    defaultValue: DataTypes.UUIDV4,
+                },
+                biotopeId: {
+                    type: DataTypes.UUID,
+                    references: {
+                        model: BiotopeModel,
+                        key: "id",
+                    },
+                },
+                measurementTypeCode: {
+                    type: DataTypes.STRING,
+                    references: {
+                        model: MeasurementTypeModel,
+                        key: "code",
+                    },
+                },
+                value: {
+                    type: DataTypes.DOUBLE,
+                    allowNull: false,
+                },
+                measuredAt: {
+                    type: DataTypes.DATE,
+                    defaultValue: DataTypes.NOW,
+                    allowNull: false,
+                },
+            },
+            { sequelize, tableName: "measurements" },
+        );
+        BiotopeModel.hasMany(MeasurementModel, { foreignKey: "biotopeId" });
+        MeasurementModel.belongsTo(BiotopeModel, { foreignKey: "biotopeId" });
+        MeasurementTypeModel.hasMany(MeasurementModel, {
+            foreignKey: "measurementTypeCode",
+        });
+        MeasurementModel.belongsTo(MeasurementTypeModel, {
+            foreignKey: "measurementTypeCode",
+        });
 
         await sequelize.sync();
 

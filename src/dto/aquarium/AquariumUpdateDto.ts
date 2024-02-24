@@ -1,12 +1,12 @@
 import { z } from "zod";
+import { BiotopeUpdateDtoSchema } from "../biotope/BiotopeUpdateDto";
 
-export const AquariumUpdateDtoSchema = z.object({
-    name: z.string().min(1).max(100).optional(),
-    description: z.string().min(0).max(1000).optional(),
-    startedDate: z.date().optional(),
-    volume: z.number().optional(),
-    salt: z.boolean().optional(),
-    image: z.custom<Blob>().optional(),
-});
+export const AquariumUpdateDtoSchema = BiotopeUpdateDtoSchema.and(
+    z
+        .object({
+            salt: z.boolean(),
+        })
+        .partial(),
+);
 
 export type AquariumUpdateDto = z.infer<typeof AquariumUpdateDtoSchema>;

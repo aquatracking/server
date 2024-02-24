@@ -1,21 +1,15 @@
 import { z } from "zod";
+import { BiotopeDtoSchema } from "../biotope/BiotopeDto";
 
-export const AquariumDtoSchema = z
-    .object({
-        id: z.string().uuid(),
-        name: z.string(),
-        description: z.string(),
-        startedDate: z.date(),
-        volume: z.number(),
+export const AquariumDtoSchema = BiotopeDtoSchema.and(
+    z.object({
         salt: z.boolean(),
-        imageUrl: z.string().default(""),
-        archivedDate: z.date().optional().nullable(),
-    })
-    .transform((data) => {
-        return {
-            ...data,
-            imageUrl: `/aquariums/${data.id}/image`,
-        };
-    });
+    }),
+).transform((data) => {
+    return {
+        ...data,
+        imageUrl: `/aquariums/${data.id}/image`,
+    };
+});
 
 export type AquariumDto = z.infer<typeof AquariumDtoSchema>;

@@ -5,11 +5,10 @@ import {
     InferAttributes,
     InferCreationAttributes,
     Model,
-    NonAttribute,
 } from "sequelize";
-import UserModel from "./UserModel";
+import { UserModel } from "./UserModel";
 
-export default class ApplicationModel extends Model<
+export class ApplicationModel extends Model<
     InferAttributes<ApplicationModel>,
     InferCreationAttributes<ApplicationModel>
 > {

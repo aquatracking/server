@@ -6,10 +6,10 @@ import {
     InferCreationAttributes,
     Model,
 } from "sequelize";
-import AquariumModel from "./AquariumModel";
-import ApplicationModel from "./ApplicationModel";
+import { ApplicationModel } from "./ApplicationModel";
+import { BiotopeModel } from "./BiotopeModel";
 
-export default class UserModel extends Model<
+export class UserModel extends Model<
     InferAttributes<UserModel>,
     InferCreationAttributes<UserModel>
 > {
@@ -18,7 +18,8 @@ export default class UserModel extends Model<
     declare email: string;
     declare password: string;
 
-    declare getAquariumModels: HasManyGetAssociationsMixin<AquariumModel>;
+    declare getBiotopeModels: HasManyGetAssociationsMixin<BiotopeModel>;
+    declare createBiotopeModel: HasManyCreateAssociationMixin<BiotopeModel>;
 
     declare getApplicationModels: HasManyGetAssociationsMixin<ApplicationModel>;
     declare createApplicationModel: HasManyCreateAssociationMixin<ApplicationModel>;

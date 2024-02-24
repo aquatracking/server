@@ -1,6 +1,6 @@
-import { FastifyInstance, FastifyPluginAsync } from "fastify";
+import { FastifyPluginAsync } from "fastify";
 import { UserDtoSchema } from "../dto/user/userDto";
-import UserModel from "../model/UserModel";
+import { UserModel } from "../model/UserModel";
 
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";

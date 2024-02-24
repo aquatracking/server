@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const MeasurementDtoSchema = z.object({
     id: z.string().uuid(),
-    type: z.string(),
+    measurementTypeCode: z.string(),
     value: z.number(),
     measuredAt: z.date(),
 });
