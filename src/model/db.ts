@@ -9,6 +9,7 @@ import { MeasurementTypeModel } from "./MeasurementTypeModel";
 import { UserModel } from "./UserModel";
 import { UserSessionModel } from "./UserSessionModel";
 import { TerrariumModel } from "./TerrariumModel";
+import { EmailValidationOTPModel } from "./EmailValidationOTPModel";
 
 export default class Db {
     private static sequelize: Sequelize;
@@ -50,9 +51,39 @@ export default class Db {
                     type: DataTypes.STRING,
                     allowNull: false,
                 },
+                verified: {
+                    type: DataTypes.BOOLEAN,
+                    allowNull: false,
+                    defaultValue: false,
+                },
             },
             { sequelize, tableName: "users" },
         );
+
+        EmailValidationOTPModel.init(
+            {
+                email: {
+                    type: DataTypes.STRING,
+                    primaryKey: true,
+                    allowNull: false,
+                    references: {
+                        model: UserModel,
+                        key: "email",
+                    },
+                },
+                code: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                expiresAt: {
+                    type: DataTypes.DATE,
+                    allowNull: false,
+                },
+            },
+            { sequelize, tableName: "email_validation_otp" },
+        );
+        UserModel.hasOne(EmailValidationOTPModel, { foreignKey: "email" });
+        EmailValidationOTPModel.belongsTo(UserModel, { foreignKey: "email" });
 
         UserSessionModel.init(
             {

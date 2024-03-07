@@ -11,7 +11,7 @@ export const isApplicationLoggedIn = (async (req, res) => {
         throw new NotLoggedError();
     }
 
-    const jwtUser = await jwt.verify(token, env.APPLICATION_TOKEN_SECRET!);
+    const jwtUser = await jwt.verify(token, env.APPLICATION_TOKEN_SECRET);
 
     if (!jwtUser.id) {
         throw new NotLoggedError();

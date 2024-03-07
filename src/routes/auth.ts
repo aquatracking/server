@@ -1,15 +1,14 @@
-import { FastifyPluginAsync } from "fastify";
-import { UserCreateDtoSchema } from "../dto/user/userCreateDto";
-import { UserDtoSchema } from "../dto/user/userDto";
-import { UserModel } from "../model/UserModel";
-
 import bcrypt from "bcryptjs";
+import { FastifyPluginAsync } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import MailSender from "../agents/MailSender";
+import { UserCreateDtoSchema } from "../dto/user/userCreateDto";
+import { UserDtoSchema } from "../dto/user/userDto";
+import { env } from "../env";
+import { UserModel } from "../model/UserModel";
 import { UserSessionModel } from "../model/UserSessionModel";
 import UserTokenUtil from "../utils/UserTokenUtil";
-import { env } from "../env";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -57,7 +56,6 @@ export default (async (fastify) => {
             },
         },
         async function (req, res) {
-            console.log(req.headers["user-agent"]);
             const user = await UserModel.findOne({
                 where: {
                     email: req.body.email,
@@ -65,7 +63,7 @@ export default (async (fastify) => {
             });
 
             if (!user) {
-                return res.status(404).send();
+                return res.status(404).send("User not found");
             }
 
             const isPasswordValid = await bcrypt.compare(
@@ -73,7 +71,7 @@ export default (async (fastify) => {
                 user.password,
             );
             if (!isPasswordValid) {
-                return res.status(403).send();
+                return res.status(403).send("Invalid password");
             }
 
             const userDto = UserDtoSchema.parse(user);

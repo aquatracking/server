@@ -1,21 +1,21 @@
 import * as dotenv from "dotenv";
-import fs from "fs";
-
 import Fastify from "fastify";
-
 import {
     jsonSchemaTransform,
     serializerCompiler,
     validatorCompiler,
 } from "fastify-type-provider-zod";
-import { ensureValidEnv, env } from "./env";
-import Db from "./model/db";
-
+import fs from "fs";
+import cron from "node-cron";
 import { isApplicationLoggedIn } from "./auth/isApplicationLoggedIn";
 import { isSessionLoggedIn } from "./auth/isSessionLoggedIn";
+import { ensureValidEnv, env } from "./env";
 import { BiotopeModel } from "./model/BiotopeModel";
+import { EmailValidationOTPModel } from "./model/EmailValidationOTPModel";
 import { MeasurementTypeModel } from "./model/MeasurementTypeModel";
 import { UserModel } from "./model/UserModel";
+import Db from "./model/db";
+import { isEmailValidated } from "./auth/isEmailValidated";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync(".env")) {
@@ -41,7 +41,6 @@ declare module "fastify" {
     }
 }
 
-// - - - - - Serveur Express - - - - - //
 (async () => {
     // - - - - - Database - - - - - //
     console.log("Connecting to database...");
@@ -118,20 +117,30 @@ declare module "fastify" {
             instance.auth([isSessionLoggedIn, isApplicationLoggedIn]),
         );
 
-        await fastify.register(import("./routes/users"), {
-            prefix: "/users",
+        await fastify.register(import("./routes/users/me"), {
+            prefix: "/users/me",
         });
 
-        await fastify.register(import("./routes/applications"), {
-            prefix: "/applications",
-        });
+        instance.register(async (instance) => {
+            instance.addHook("preHandler", instance.auth([isEmailValidated]));
 
-        await fastify.register(import("./routes/biotopes/aquariums"), {
-            prefix: "/aquariums",
-        });
+            await fastify.register(import("./routes/applications"), {
+                prefix: "/applications",
+            });
 
-        await fastify.register(import("./routes/biotopes/terrariums"), {
-            prefix: "/terrariums",
+            await fastify.register(import("./routes/biotopes/aquariums"), {
+                prefix: "/aquariums",
+            });
+
+            await fastify.register(import("./routes/biotopes/terrariums"), {
+                prefix: "/terrariums",
+            });
         });
+    });
+
+    // - - - - - Setup cron jobs - - - - - //
+    // Every day at 00:00
+    cron.schedule("0 0 * * *", () => {
+        EmailValidationOTPModel.destroyExpiredTokens();
     });
 })();

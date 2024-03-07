@@ -17,6 +17,7 @@ export class UserModel extends Model<
     declare username: string;
     declare email: string;
     declare password: string;
+    declare verified: CreationOptional<boolean>;
 
     declare getBiotopeModels: HasManyGetAssociationsMixin<BiotopeModel>;
     declare createBiotopeModel: HasManyCreateAssociationMixin<BiotopeModel>;
