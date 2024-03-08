@@ -9,6 +9,7 @@ import { env } from "../env";
 import { UserModel } from "../model/UserModel";
 import { UserSessionModel } from "../model/UserSessionModel";
 import UserTokenUtil from "../utils/UserTokenUtil";
+import { authenticator } from "otplib";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -52,6 +53,7 @@ export default (async (fastify) => {
                 body: z.object({
                     email: z.string().email(),
                     password: z.string(),
+                    otp: z.string().length(6).optional(),
                 }),
             },
         },
@@ -72,6 +74,25 @@ export default (async (fastify) => {
             );
             if (!isPasswordValid) {
                 return res.status(403).send("Invalid password");
+            }
+
+            if (user.totpEnabled) {
+                if (!user.totpSecret) {
+                    return res.status(500).send("TOTP secret not found");
+                }
+
+                if (!req.body.otp) {
+                    return res.status(403).send("OTP required");
+                }
+
+                if (
+                    !authenticator.verify({
+                        token: req.body.otp,
+                        secret: user.totpSecret,
+                    })
+                ) {
+                    return res.status(403).send("Invalid OTP");
+                }
             }
 
             const userDto = UserDtoSchema.parse(user);

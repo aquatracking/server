@@ -18,6 +18,8 @@ export class UserModel extends Model<
     declare email: string;
     declare password: string;
     declare verified: CreationOptional<boolean>;
+    declare totpEnabled: CreationOptional<boolean>;
+    declare totpSecret?: CreationOptional<string>;
 
     declare getBiotopeModels: HasManyGetAssociationsMixin<BiotopeModel>;
     declare createBiotopeModel: HasManyCreateAssociationMixin<BiotopeModel>;

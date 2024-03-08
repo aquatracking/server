@@ -56,6 +56,14 @@ export default class Db {
                     allowNull: false,
                     defaultValue: false,
                 },
+                totpEnabled: {
+                    type: DataTypes.BOOLEAN,
+                    allowNull: false,
+                    defaultValue: false,
+                },
+                totpSecret: {
+                    type: DataTypes.STRING,
+                },
             },
             { sequelize, tableName: "users" },
         );

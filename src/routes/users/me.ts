@@ -1,6 +1,7 @@
 import { FastifyPluginAsync } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import otpGenerator from "otp-generator";
+import { authenticator } from "otplib";
 import { z } from "zod";
 import MailSender from "../../agents/MailSender";
 import { UserDtoSchema } from "../../dto/user/userDto";
@@ -95,6 +96,113 @@ export default (async (fastify) => {
             return res.status(200).send();
         },
     );
+
+    instance.post(
+        "/totp/enable",
+        {
+            schema: {
+                tags: ["users"],
+                description: `Enable TOTP for the connected user. Will need verify with ${instance.prefix}/totp/enable/verify.`,
+            },
+        },
+        async function (req, res) {
+            if (req.user!.totpEnabled) {
+                return res.status(400).send("TOTP_ALREADY_ENABLED");
+            }
+
+            const secret = authenticator.generateSecret();
+
+            console.log(authenticator.generate(secret));
+
+            req.user!.totpSecret = secret;
+
+            await req.user!.save();
+
+            return res.status(200).send({
+                otpUri: authenticator.keyuri(
+                    req.user!.username,
+                    "Aquatracking",
+                    secret,
+                ),
+            });
+        },
+    );
+
+    instance.post(
+        "/totp/enable/verify",
+        {
+            schema: {
+                tags: ["users"],
+                description: `Verify the TOTP code for the connected user. Use ${instance.prefix}/totp/enable to enable TOTP.`,
+                body: z.object({
+                    otp: z.string().length(6),
+                }),
+            },
+        },
+        async function (req, res) {
+            if (!req.user!.totpSecret) {
+                return res.status(400).send("NO_TOTP_SECRET");
+            }
+
+            if (req.user!.totpEnabled) {
+                return res.status(400).send("TOTP_ALREADY_ENABLED");
+            }
+
+            const verified = authenticator.verify({
+                token: req.body.otp,
+                secret: req.user!.totpSecret,
+            });
+
+            if (!verified) {
+                return res.status(403).send("INVALID_TOTP_CODE");
+            }
+
+            req.user!.totpEnabled = true;
+
+            await req.user!.save();
+
+            return res.status(200).send();
+        },
+    );
+
+    instance.post(
+        "/totp/disable",
+        {
+            schema: {
+                tags: ["users"],
+                description: `Disable TOTP for the connected user.`,
+                body: z.object({
+                    otp: z.string().length(6),
+                }),
+            },
+        },
+        async function (req, res) {
+            if (!req.user!.totpEnabled) {
+                return res.status(400).send("TOTP_NOT_ENABLED");
+            }
+
+            if (!req.user!.totpSecret) {
+                return res.status(500).send("NO_TOTP_SECRET");
+            }
+
+            if (
+                !authenticator.verify({
+                    token: req.body.otp,
+                    secret: req.user!.totpSecret,
+                })
+            ) {
+                return res.status(403).send("INVALID_TOTP_CODE");
+            }
+
+            req.user!.totpSecret = undefined;
+            req.user!.totpEnabled = false;
+
+            await req.user!.save();
+
+            return res.status(200).send();
+        },
+    );
+
     // TODO: to move in a admin dedicated route
     // instance.get(
     //     "/",

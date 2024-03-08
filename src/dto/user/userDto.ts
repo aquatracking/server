@@ -5,6 +5,7 @@ export const UserDtoSchema = z.object({
     username: z.string(),
     email: z.string().email(),
     verified: z.boolean(),
+    totpEnabled: z.boolean(),
 });
 
 export type UserDto = z.infer<typeof UserDtoSchema>;
