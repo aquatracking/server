@@ -142,5 +142,6 @@ declare module "fastify" {
     // Every day at 00:00
     cron.schedule("0 0 * * *", () => {
         EmailValidationOTPModel.destroyExpiredTokens();
+        UserModel.destroyExpiredDeletedUsers();
     });
 })();

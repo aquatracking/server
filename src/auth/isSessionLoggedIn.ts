@@ -22,7 +22,7 @@ export const isSessionLoggedIn = (async (req, res) => {
 
     const user = await session?.getUserModel();
 
-    if (!session || !user) {
+    if (!session || !user || user.deleteAt) {
         throw new NotLoggedError();
     }
 

@@ -26,7 +26,7 @@ export const isApplicationLoggedIn = (async (req, res) => {
 
     const user = await application?.getUserModel();
 
-    if (!application || !user) {
+    if (!application || !user || user.deleteAt) {
         throw new NotLoggedError();
     }
 

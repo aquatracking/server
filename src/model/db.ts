@@ -64,6 +64,9 @@ export default class Db {
                 totpSecret: {
                     type: DataTypes.STRING,
                 },
+                deleteAt: {
+                    type: DataTypes.DATE,
+                },
             },
             { sequelize, tableName: "users" },
         );

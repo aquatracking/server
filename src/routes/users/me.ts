@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { FastifyPluginAsync } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import otpGenerator from "otp-generator";
@@ -103,6 +104,9 @@ export default (async (fastify) => {
             schema: {
                 tags: ["users"],
                 description: `Enable TOTP for the connected user. Will need verify with ${instance.prefix}/totp/enable/verify.`,
+                body: z.object({
+                    password: z.string(),
+                }),
             },
         },
         async function (req, res) {
@@ -110,9 +114,16 @@ export default (async (fastify) => {
                 return res.status(400).send("TOTP_ALREADY_ENABLED");
             }
 
-            const secret = authenticator.generateSecret();
+            const isPasswordValid = await bcrypt.compare(
+                req.body.password,
+                req.user!.password,
+            );
 
-            console.log(authenticator.generate(secret));
+            if (!isPasswordValid) {
+                return res.status(403).send("INVALID_PASSWORD");
+            }
+
+            const secret = authenticator.generateSecret();
 
             req.user!.totpSecret = secret;
 
@@ -194,12 +205,64 @@ export default (async (fastify) => {
                 return res.status(403).send("INVALID_TOTP_CODE");
             }
 
-            req.user!.totpSecret = undefined;
+            req.user!.totpSecret = null;
             req.user!.totpEnabled = false;
 
             await req.user!.save();
 
             return res.status(200).send();
+        },
+    );
+
+    instance.delete(
+        "/",
+        {
+            schema: {
+                tags: ["users"],
+                description:
+                    "Delete the connected user. The data will be definitely lost after 30 days.",
+                body: z.object({
+                    password: z.string(),
+                    otp: z.string().length(6).optional(),
+                }),
+            },
+        },
+        async function (req, res) {
+            const user = req.user!;
+
+            const isPasswordValid = await bcrypt.compare(
+                req.body.password,
+                req.user!.password,
+            );
+            if (!isPasswordValid) {
+                return res.status(403).send("Invalid password");
+            }
+
+            if (user.totpEnabled) {
+                if (!user.totpSecret) {
+                    return res.status(500).send("TOTP secret not found");
+                }
+
+                if (!req.body.otp) {
+                    return res.status(403).send("OTP required");
+                }
+
+                if (
+                    !authenticator.verify({
+                        token: req.body.otp,
+                        secret: user.totpSecret,
+                    })
+                ) {
+                    return res.status(403).send("Invalid OTP");
+                }
+            }
+
+            user.deleteAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+            user.destroyAllSessions();
+
+            await user.save();
+
+            return res.status(204).send();
         },
     );
 

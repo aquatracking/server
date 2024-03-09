@@ -23,12 +23,33 @@ export default (async (fastify) => {
                 body: UserCreateDtoSchema,
                 response: {
                     201: UserDtoSchema,
+                    409: z.string(),
                 },
             },
         },
         async function (req, res) {
             if (!env.REGISTRATION_ENABLED) {
                 return res.status(403).send();
+            }
+
+            const emailExists = await UserModel.findOne({
+                where: {
+                    email: req.body.email,
+                },
+            });
+
+            if (emailExists) {
+                return res.status(409).send("EMAIL_ALREADY_EXISTS");
+            }
+
+            const usernameExists = await UserModel.findOne({
+                where: {
+                    username: req.body.username,
+                },
+            });
+
+            if (usernameExists) {
+                return res.status(409).send("USERNAME_ALREADY_EXISTS");
             }
 
             const hashPassword = await bcrypt.hash(req.body.password, 10);
@@ -61,6 +82,7 @@ export default (async (fastify) => {
             const user = await UserModel.findOne({
                 where: {
                     email: req.body.email,
+                    deleteAt: null,
                 },
             });
 
