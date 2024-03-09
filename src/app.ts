@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 import Fastify from "fastify";
 import {
+    ZodTypeProvider,
     jsonSchemaTransform,
     serializerCompiler,
     validatorCompiler,
@@ -8,14 +9,15 @@ import {
 import fs from "fs";
 import cron from "node-cron";
 import { isApplicationLoggedIn } from "./auth/isApplicationLoggedIn";
+import { isEmailValidated } from "./auth/isEmailValidated";
 import { isSessionLoggedIn } from "./auth/isSessionLoggedIn";
 import { ensureValidEnv, env } from "./env";
+import { ApiError } from "./errors/ApiError/ApiError";
 import { BiotopeModel } from "./model/BiotopeModel";
 import { EmailValidationOTPModel } from "./model/EmailValidationOTPModel";
 import { MeasurementTypeModel } from "./model/MeasurementTypeModel";
 import { UserModel } from "./model/UserModel";
 import Db from "./model/db";
-import { isEmailValidated } from "./auth/isEmailValidated";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync(".env")) {
@@ -105,6 +107,27 @@ declare module "fastify" {
     });
 
     await fastify.register(import("@fastify/cookie"));
+
+    // - - - - - Error handling - - - - - //
+    fastify
+        .withTypeProvider<ZodTypeProvider>()
+        .setErrorHandler((error, request, reply) => {
+            const finalError = {
+                statusCode: 500,
+                error: "Internal Server Error",
+                code: "INTERNAL_SERVER_ERROR",
+                data: undefined as unknown,
+            };
+
+            if (error instanceof ApiError) {
+                finalError.statusCode = error.statusCode;
+                finalError.error = error.error;
+                finalError.code = error.code;
+                finalError.data = error.data;
+            }
+
+            return reply.status(finalError.statusCode).send(finalError);
+        });
 
     // - - - - - Routes - - - - - //
     await fastify.register(import("./routes/auth"), {

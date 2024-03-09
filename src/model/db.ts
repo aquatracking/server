@@ -23,6 +23,7 @@ export default class Db {
                 dialect: "mysql",
                 host: env.MARIADB_HOST,
                 port: env.MARIADB_PORT,
+                logging: false,
             },
         );
         await Db.sequelize.authenticate();

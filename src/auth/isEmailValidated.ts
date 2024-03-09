@@ -1,13 +1,13 @@
 import { FastifyAuthFunction } from "@fastify/auth";
-import { NotEmailValidatedError } from "../errors/NotEmailValidatedError";
-import { NotLoggedError } from "../errors/NotLoggedError";
+import { EmailNotValidatedApiError } from "../errors/ApiError/EmailNotValidatedApiError";
+import { NotLoggedApiError } from "../errors/ApiError/NotLoggedApiError";
 
 export const isEmailValidated = (async (req, res) => {
     if (!req.user) {
-        throw new NotLoggedError();
+        throw new NotLoggedApiError();
     }
 
     if (!req.user.verified) {
-        throw new NotEmailValidatedError();
+        throw new EmailNotValidatedApiError();
     }
 }) satisfies FastifyAuthFunction;

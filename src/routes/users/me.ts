@@ -7,6 +7,16 @@ import { z } from "zod";
 import MailSender from "../../agents/MailSender";
 import { UserDtoSchema } from "../../dto/user/userDto";
 import { EmailValidationOTPModel } from "../../model/EmailValidationOTPModel";
+import { EmailAlreadyVerifiedApiError } from "../../errors/ApiError/EmailAlreadyVerifiedApiError";
+import { NoEmailVerificationCodeApiError } from "../../errors/ApiError/NoEmailVerificationCodeApiError";
+import { ExpiredEmailVerificationCodeApiError } from "../../errors/ApiError/ExpiredEmailVerificationCodeApiError";
+import { InvalidEmailVerificationCodeApiError } from "../../errors/ApiError/InvalidEmailVerificationCodeApiError";
+import { WrongPasswordApiError } from "../../errors/ApiError/WrongPasswordApiError";
+import { TOTPAlreadyEnabledApiError } from "../../errors/ApiError/TOTPAlreadyEnabledApiError";
+import { NoTOTPSecretApiError } from "../../errors/ApiError/NoTOTPSecretApiError";
+import { WrongOTPApiError } from "../../errors/ApiError/WrongOTPApiError";
+import { TOTPNotEnabledApiError } from "../../errors/ApiError/TOTPNotEnabledApiError";
+import { OTPRequiredApiError } from "../../errors/ApiError/OTPRequiredApiError";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -18,13 +28,17 @@ export default (async (fastify) => {
                 tags: ["users"],
                 description:
                     "Send a code to the connected user's email to verify it. The code is valid for 5 minutes.",
+                response: {
+                    200: z.void(),
+                    409: EmailAlreadyVerifiedApiError.schema,
+                },
             },
         },
         async function (req, res) {
             const userEmail = req.user!.email;
 
             if (req.user!.verified) {
-                return res.status(400).send("EMAIL_ALREADY_VERIFIED");
+                throw new EmailAlreadyVerifiedApiError();
             }
 
             let oldEmailToken = await EmailValidationOTPModel.findOne({
@@ -54,7 +68,7 @@ export default (async (fastify) => {
                 `Bonjour,\n\nVoici votre code de validation: ${emailToken.code}\n\nCe code est valable 5 minutes.`,
             );
 
-            return res.status(204).send();
+            return res.status(200).send();
         },
     );
 
@@ -65,13 +79,22 @@ export default (async (fastify) => {
                 tags: ["users"],
                 description: `Verify the user's email with the code sent. Use ${instance.prefix}/verify-email/send-code to send a code.`,
                 body: z.object({
-                    code: z.string(),
+                    code: z.string().length(6),
                 }),
+                response: {
+                    200: z.void(),
+                    403: z.union([
+                        NoEmailVerificationCodeApiError.schema,
+                        ExpiredEmailVerificationCodeApiError.schema,
+                        InvalidEmailVerificationCodeApiError.schema,
+                    ]),
+                    409: EmailAlreadyVerifiedApiError.schema,
+                },
             },
         },
         async function (req, res) {
             if (req.user!.verified) {
-                return res.status(400).send("EMAIL_ALREADY_VERIFIED");
+                throw new EmailAlreadyVerifiedApiError();
             }
 
             let emailToken = await EmailValidationOTPModel.findOne({
@@ -81,12 +104,12 @@ export default (async (fastify) => {
             });
 
             if (!emailToken) {
-                return res.status(403).send("NO_EMAIL_VERIFICATION_CODE");
+                throw new NoEmailVerificationCodeApiError();
             } else if (emailToken.expiresAt < new Date()) {
                 await emailToken.destroy();
-                return res.status(403).send("EMAIL_VERIFICATION_CODE_EXPIRED");
+                throw new ExpiredEmailVerificationCodeApiError();
             } else if (emailToken.code !== req.body.code) {
-                return res.status(403).send("INVALID_EMAIL_VERIFICATION_CODE");
+                throw new InvalidEmailVerificationCodeApiError();
             }
 
             req.user!.verified = true;
@@ -107,21 +130,21 @@ export default (async (fastify) => {
                 body: z.object({
                     password: z.string(),
                 }),
+                response: {
+                    200: z.object({
+                        otpUri: z.string(),
+                    }),
+                    400: TOTPAlreadyEnabledApiError.schema,
+                    403: WrongPasswordApiError.schema,
+                },
             },
         },
         async function (req, res) {
             if (req.user!.totpEnabled) {
-                return res.status(400).send("TOTP_ALREADY_ENABLED");
+                throw new TOTPAlreadyEnabledApiError();
             }
 
-            const isPasswordValid = await bcrypt.compare(
-                req.body.password,
-                req.user!.password,
-            );
-
-            if (!isPasswordValid) {
-                return res.status(403).send("INVALID_PASSWORD");
-            }
+            await req.user!.checkPassword(req.body.password);
 
             const secret = authenticator.generateSecret();
 
@@ -148,15 +171,23 @@ export default (async (fastify) => {
                 body: z.object({
                     otp: z.string().length(6),
                 }),
+                response: {
+                    200: z.void(),
+                    400: z.union([
+                        NoTOTPSecretApiError.schema,
+                        TOTPAlreadyEnabledApiError.schema,
+                    ]),
+                    403: WrongOTPApiError.schema,
+                },
             },
         },
         async function (req, res) {
             if (!req.user!.totpSecret) {
-                return res.status(400).send("NO_TOTP_SECRET");
+                throw new NoTOTPSecretApiError();
             }
 
             if (req.user!.totpEnabled) {
-                return res.status(400).send("TOTP_ALREADY_ENABLED");
+                throw new TOTPAlreadyEnabledApiError();
             }
 
             const verified = authenticator.verify({
@@ -165,7 +196,7 @@ export default (async (fastify) => {
             });
 
             if (!verified) {
-                return res.status(403).send("INVALID_TOTP_CODE");
+                throw new WrongOTPApiError();
             }
 
             req.user!.totpEnabled = true;
@@ -183,27 +214,26 @@ export default (async (fastify) => {
                 tags: ["users"],
                 description: `Disable TOTP for the connected user.`,
                 body: z.object({
+                    password: z.string(),
                     otp: z.string().length(6),
                 }),
+                response: {
+                    200: z.void(),
+                    400: TOTPNotEnabledApiError.schema,
+                    403: z.union([
+                        WrongPasswordApiError.schema,
+                        WrongOTPApiError.schema,
+                    ]),
+                },
             },
         },
         async function (req, res) {
             if (!req.user!.totpEnabled) {
-                return res.status(400).send("TOTP_NOT_ENABLED");
+                throw new TOTPNotEnabledApiError();
             }
 
-            if (!req.user!.totpSecret) {
-                return res.status(500).send("NO_TOTP_SECRET");
-            }
-
-            if (
-                !authenticator.verify({
-                    token: req.body.otp,
-                    secret: req.user!.totpSecret,
-                })
-            ) {
-                return res.status(403).send("INVALID_TOTP_CODE");
-            }
+            await req.user!.checkPassword(req.body.password);
+            req.user!.checkOTP(req.body.otp);
 
             req.user!.totpSecret = null;
             req.user!.totpEnabled = false;
@@ -225,37 +255,21 @@ export default (async (fastify) => {
                     password: z.string(),
                     otp: z.string().length(6).optional(),
                 }),
+                response: {
+                    204: z.void(),
+                    403: z.union([
+                        WrongPasswordApiError.schema,
+                        WrongOTPApiError.schema,
+                        OTPRequiredApiError.schema,
+                    ]),
+                },
             },
         },
         async function (req, res) {
             const user = req.user!;
 
-            const isPasswordValid = await bcrypt.compare(
-                req.body.password,
-                req.user!.password,
-            );
-            if (!isPasswordValid) {
-                return res.status(403).send("Invalid password");
-            }
-
-            if (user.totpEnabled) {
-                if (!user.totpSecret) {
-                    return res.status(500).send("TOTP secret not found");
-                }
-
-                if (!req.body.otp) {
-                    return res.status(403).send("OTP required");
-                }
-
-                if (
-                    !authenticator.verify({
-                        token: req.body.otp,
-                        secret: user.totpSecret,
-                    })
-                ) {
-                    return res.status(403).send("Invalid OTP");
-                }
-            }
+            await user.checkPassword(req.body.password);
+            user.checkOTP(req.body.otp);
 
             user.deleteAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
             user.destroyAllSessions();

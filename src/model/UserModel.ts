@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import {
     CreationOptional,
     HasManyCreateAssociationMixin,
@@ -10,6 +11,10 @@ import {
 import { ApplicationModel } from "./ApplicationModel";
 import { BiotopeModel } from "./BiotopeModel";
 import { UserSessionModel } from "./UserSessionModel";
+import { authenticator } from "otplib";
+import { WrongPasswordApiError } from "../errors/ApiError/WrongPasswordApiError";
+import { OTPRequiredApiError } from "../errors/ApiError/OTPRequiredApiError";
+import { WrongOTPApiError } from "../errors/ApiError/WrongOTPApiError";
 
 export class UserModel extends Model<
     InferAttributes<UserModel>,
@@ -29,6 +34,31 @@ export class UserModel extends Model<
 
     declare getApplicationModels: HasManyGetAssociationsMixin<ApplicationModel>;
     declare createApplicationModel: HasManyCreateAssociationMixin<ApplicationModel>;
+
+    async checkPassword(password: string): Promise<void> {
+        const isPasswordValid = await bcrypt.compare(password, this.password);
+        if (!isPasswordValid) {
+            throw new WrongPasswordApiError();
+        }
+    }
+
+    checkOTP(otp?: string): void {
+        if (!this.totpEnabled) {
+            return;
+        }
+
+        if (!this.totpSecret) {
+            throw new Error("TOTP secret not found");
+        }
+
+        if (!otp) {
+            throw new OTPRequiredApiError();
+        }
+
+        if (!authenticator.verify({ token: otp, secret: this.totpSecret })) {
+            throw new WrongOTPApiError();
+        }
+    }
 
     destroyAllSessions() {
         return UserSessionModel.destroy({

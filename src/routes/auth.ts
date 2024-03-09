@@ -6,10 +6,16 @@ import MailSender from "../agents/MailSender";
 import { UserCreateDtoSchema } from "../dto/user/userCreateDto";
 import { UserDtoSchema } from "../dto/user/userDto";
 import { env } from "../env";
+import { EmailAlreadyExistApiError } from "../errors/ApiError/EmailAlreadyExistApiError";
+import { OTPRequiredApiError } from "../errors/ApiError/OTPRequiredApiError";
+import { UserNotFoundApiError } from "../errors/ApiError/UserNotFoundApiError";
+import { UsernameAlreadyExistApiError } from "../errors/ApiError/UsernameAlreadyExistApiError";
+import { WrongOTPApiError } from "../errors/ApiError/WrongOTPApiError";
+import { WrongPasswordApiError } from "../errors/ApiError/WrongPasswordApiError";
 import { UserModel } from "../model/UserModel";
 import { UserSessionModel } from "../model/UserSessionModel";
 import UserTokenUtil from "../utils/UserTokenUtil";
-import { authenticator } from "otplib";
+import { NotLoggedApiError } from "../errors/ApiError/NotLoggedApiError";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -23,7 +29,10 @@ export default (async (fastify) => {
                 body: UserCreateDtoSchema,
                 response: {
                     201: UserDtoSchema,
-                    409: z.string(),
+                    409: z.union([
+                        UsernameAlreadyExistApiError.schema,
+                        EmailAlreadyExistApiError.schema,
+                    ]),
                 },
             },
         },
@@ -39,7 +48,7 @@ export default (async (fastify) => {
             });
 
             if (emailExists) {
-                return res.status(409).send("EMAIL_ALREADY_EXISTS");
+                throw new EmailAlreadyExistApiError();
             }
 
             const usernameExists = await UserModel.findOne({
@@ -49,7 +58,7 @@ export default (async (fastify) => {
             });
 
             if (usernameExists) {
-                return res.status(409).send("USERNAME_ALREADY_EXISTS");
+                throw new UsernameAlreadyExistApiError();
             }
 
             const hashPassword = await bcrypt.hash(req.body.password, 10);
@@ -76,6 +85,15 @@ export default (async (fastify) => {
                     password: z.string(),
                     otp: z.string().length(6).optional(),
                 }),
+                response: {
+                    200: UserDtoSchema,
+                    404: UserNotFoundApiError.schema,
+                    403: z.union([
+                        WrongPasswordApiError.schema,
+                        WrongOTPApiError.schema,
+                        OTPRequiredApiError.schema,
+                    ]),
+                },
             },
         },
         async function (req, res) {
@@ -87,35 +105,11 @@ export default (async (fastify) => {
             });
 
             if (!user) {
-                return res.status(404).send("User not found");
+                throw new UserNotFoundApiError();
             }
 
-            const isPasswordValid = await bcrypt.compare(
-                req.body.password,
-                user.password,
-            );
-            if (!isPasswordValid) {
-                return res.status(403).send("Invalid password");
-            }
-
-            if (user.totpEnabled) {
-                if (!user.totpSecret) {
-                    return res.status(500).send("TOTP secret not found");
-                }
-
-                if (!req.body.otp) {
-                    return res.status(403).send("OTP required");
-                }
-
-                if (
-                    !authenticator.verify({
-                        token: req.body.otp,
-                        secret: user.totpSecret,
-                    })
-                ) {
-                    return res.status(403).send("Invalid OTP");
-                }
-            }
+            await user.checkPassword(req.body.password);
+            user.checkOTP(req.body.otp);
 
             const userDto = UserDtoSchema.parse(user);
 
@@ -151,6 +145,7 @@ export default (async (fastify) => {
                 description: "Logout a user and delete his session",
                 response: {
                     204: z.void(),
+                    401: NotLoggedApiError.schema,
                 },
             },
         },
@@ -158,7 +153,7 @@ export default (async (fastify) => {
             const token = req.cookies["session-token"];
 
             if (!token) {
-                return res.status(401).send();
+                throw new NotLoggedApiError();
             }
 
             const session = await UserSessionModel.findOne({
@@ -168,7 +163,7 @@ export default (async (fastify) => {
             });
 
             if (!session) {
-                return res.status(401).send();
+                throw new NotLoggedApiError();
             }
 
             await session.destroy();
