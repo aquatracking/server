@@ -35,6 +35,12 @@ export default (async (fastify) => {
                     ]),
                 },
             },
+            config: {
+                rateLimit: {
+                    max: 10,
+                    timeWindow: "1 minute",
+                },
+            },
         },
         async function (req, res) {
             if (!env.REGISTRATION_ENABLED) {
@@ -93,6 +99,12 @@ export default (async (fastify) => {
                         WrongOTPApiError.schema,
                         OTPRequiredApiError.schema,
                     ]),
+                },
+            },
+            config: {
+                rateLimit: {
+                    max: 10,
+                    timeWindow: "5 minute",
                 },
             },
         },

@@ -109,6 +109,9 @@ declare module "fastify" {
 
     await fastify.register(import("@fastify/cookie"));
 
+    // - - - - - Rate limiting - - - - - //
+    await fastify.register(import("@fastify/rate-limit"), {});
+
     // - - - - - Error handling - - - - - //
     fastify
         .withTypeProvider<ZodTypeProvider>()
@@ -125,6 +128,12 @@ declare module "fastify" {
                 finalError.error = error.error;
                 finalError.code = error.code;
                 finalError.data = error.data;
+            }
+
+            if (error.statusCode === 429) {
+                finalError.statusCode = 429;
+                finalError.error = "Too Many Requests";
+                finalError.code = "TOO_MANY_REQUESTS";
             }
 
             return reply.status(finalError.statusCode).send(finalError);
