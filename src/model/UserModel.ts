@@ -28,6 +28,7 @@ export class UserModel extends Model<
     declare totpEnabled: CreationOptional<boolean>;
     declare totpSecret?: CreationOptional<string | null>;
     declare deleteAt?: CreationOptional<Date | null>;
+    declare isAdmin: CreationOptional<boolean>;
 
     declare getBiotopeModels: HasManyGetAssociationsMixin<BiotopeModel>;
     declare createBiotopeModel: HasManyCreateAssociationMixin<BiotopeModel>;

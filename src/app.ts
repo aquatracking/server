@@ -18,6 +18,7 @@ import { EmailValidationOTPModel } from "./model/EmailValidationOTPModel";
 import { MeasurementTypeModel } from "./model/MeasurementTypeModel";
 import { UserModel } from "./model/UserModel";
 import Db from "./model/db";
+import { isAdminLoggedIn } from "./auth/isAdminLoggedIn";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync(".env")) {
@@ -158,6 +159,20 @@ declare module "fastify" {
             await fastify.register(import("./routes/biotopes/terrariums"), {
                 prefix: "/terrariums",
             });
+
+            instance.register(
+                async (instance) => {
+                    instance.addHook(
+                        "preHandler",
+                        instance.auth([isAdminLoggedIn]),
+                    );
+
+                    await fastify.register(import("./routes/admin/users"), {
+                        prefix: "/users",
+                    });
+                },
+                { prefix: "/admin" },
+            );
         });
     });
 

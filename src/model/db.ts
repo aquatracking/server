@@ -68,6 +68,11 @@ export default class Db {
                 deleteAt: {
                     type: DataTypes.DATE,
                 },
+                isAdmin: {
+                    type: DataTypes.BOOLEAN,
+                    allowNull: false,
+                    defaultValue: false,
+                },
             },
             { sequelize, tableName: "users" },
         );

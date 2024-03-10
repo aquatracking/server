@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import { FastifyPluginAsync } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import otpGenerator from "otp-generator";
@@ -6,17 +5,17 @@ import { authenticator } from "otplib";
 import { z } from "zod";
 import MailSender from "../../agents/MailSender";
 import { UserDtoSchema } from "../../dto/user/userDto";
-import { EmailValidationOTPModel } from "../../model/EmailValidationOTPModel";
 import { EmailAlreadyVerifiedApiError } from "../../errors/ApiError/EmailAlreadyVerifiedApiError";
-import { NoEmailVerificationCodeApiError } from "../../errors/ApiError/NoEmailVerificationCodeApiError";
 import { ExpiredEmailVerificationCodeApiError } from "../../errors/ApiError/ExpiredEmailVerificationCodeApiError";
 import { InvalidEmailVerificationCodeApiError } from "../../errors/ApiError/InvalidEmailVerificationCodeApiError";
-import { WrongPasswordApiError } from "../../errors/ApiError/WrongPasswordApiError";
-import { TOTPAlreadyEnabledApiError } from "../../errors/ApiError/TOTPAlreadyEnabledApiError";
+import { NoEmailVerificationCodeApiError } from "../../errors/ApiError/NoEmailVerificationCodeApiError";
 import { NoTOTPSecretApiError } from "../../errors/ApiError/NoTOTPSecretApiError";
-import { WrongOTPApiError } from "../../errors/ApiError/WrongOTPApiError";
-import { TOTPNotEnabledApiError } from "../../errors/ApiError/TOTPNotEnabledApiError";
 import { OTPRequiredApiError } from "../../errors/ApiError/OTPRequiredApiError";
+import { TOTPAlreadyEnabledApiError } from "../../errors/ApiError/TOTPAlreadyEnabledApiError";
+import { TOTPNotEnabledApiError } from "../../errors/ApiError/TOTPNotEnabledApiError";
+import { WrongOTPApiError } from "../../errors/ApiError/WrongOTPApiError";
+import { WrongPasswordApiError } from "../../errors/ApiError/WrongPasswordApiError";
+import { EmailValidationOTPModel } from "../../model/EmailValidationOTPModel";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -279,84 +278,6 @@ export default (async (fastify) => {
             return res.status(204).send();
         },
     );
-
-    // TODO: to move in a admin dedicated route
-    // instance.get(
-    //     "/",
-    //     {
-    //         schema: {
-    //             tags: ["users"],
-    //             description: "Get all users",
-    //             response: {
-    //                 200: UserDtoSchema.array(),
-    //             },
-    //         },
-    //     },
-    //     async function () {
-    //         const users = await UserModel.findAll();
-    //
-    //         return users.map((user) => UserDtoSchema.parse(user));
-    //     },
-    // );
-
-    // TODO: to move in a admin dedicated route
-    // instance.get(
-    //     "/:id",
-    //     {
-    //         schema: {
-    //             tags: ["users"],
-    //             description: "Get a user",
-    //             params: z.object({
-    //                 id: z.string().uuid(),
-    //             }),
-    //             response: {
-    //                 200: UserDtoSchema,
-    //             },
-    //         },
-    //     },
-    //     async function (req, res) {
-    //         const user = await UserModel.findOne({
-    //             where: {
-    //                 id: req.params.id,
-    //             },
-    //         });
-    //
-    //         if (!user) {
-    //             return res.status(404);
-    //         }
-    //
-    //         return UserDtoSchema.parse(user);
-    //     },
-    // );
-
-    // TODO: to move in a admin dedicated route
-    // instance.delete(
-    //     "/:id",
-    //     {
-    //         schema: {
-    //             tags: ["users"],
-    //             description: "Delete a user",
-    //             params: z.object({
-    //                 id: z.string().uuid(),
-    //             }),
-    //         },
-    //     },
-    //     async function (req, res) {
-    //         const user = await UserModel.findOne({
-    //             where: {
-    //                 id: req.params.id,
-    //             },
-    //         });
-    //
-    //         if (!user) {
-    //             return res.status(404);
-    //         }
-    //
-    //         await user.destroy();
-    //
-    //         return res.status(204).send();
-    //     },
-    // );
 
     instance.get(
         "/",
