@@ -10,4 +10,4 @@ export const AdminUserDtoSchema = z.object({
     deleteAt: z.date().nullable(),
 });
 
-export type UserDto = z.infer<typeof AdminUserDtoSchema>;
+export type AdminUserDto = z.infer<typeof AdminUserDtoSchema>;

@@ -2,8 +2,9 @@ import bcrypt from "bcryptjs";
 import { FastifyPluginAsync } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { AdminUserCreateDtoSchema } from "../../dto/admin/user/AdminUserCreateDto";
 import { AdminUserDtoSchema } from "../../dto/admin/user/AdminUserDto";
-import { UserCreateDtoSchema } from "../../dto/user/userCreateDto";
+import { AdminUserUpdateDtoSchema } from "../../dto/admin/user/AdminUserUpdateDto";
 import { CantDeleteItSelfApiError } from "../../errors/ApiError/CantDeleteItSelf";
 import { EmailAlreadyExistApiError } from "../../errors/ApiError/EmailAlreadyExistApiError";
 import { OTPRequiredApiError } from "../../errors/ApiError/OTPRequiredApiError";
@@ -125,7 +126,7 @@ export default (async (fastify) => {
             schema: {
                 tags: ["admin", "users"],
                 description: "Create a user",
-                body: UserCreateDtoSchema,
+                body: AdminUserCreateDtoSchema,
                 response: {
                     201: AdminUserDtoSchema,
                     409: z.union([
@@ -166,6 +167,80 @@ export default (async (fastify) => {
             });
 
             res.status(201).send(AdminUserDtoSchema.parse(user));
+        },
+    );
+
+    instance.patch(
+        "/:id",
+        {
+            schema: {
+                tags: ["admin", "users"],
+                description: "Update a user",
+                params: z.object({
+                    id: z.string().uuid(),
+                }),
+                body: AdminUserUpdateDtoSchema,
+                response: {
+                    200: AdminUserDtoSchema,
+                    404: UserNotFoundApiError.schema,
+                    409: z.union([
+                        UsernameAlreadyExistApiError.schema,
+                        EmailAlreadyExistApiError.schema,
+                    ]),
+                },
+            },
+        },
+        async function (req, res) {
+            const user = await UserModel.findOne({
+                where: {
+                    id: req.params.id,
+                },
+            });
+
+            if (!user) {
+                throw new UserNotFoundApiError();
+            }
+
+            if (req.body.email && req.body.email !== user.email) {
+                const emailExists = await UserModel.findOne({
+                    where: {
+                        email: req.body.email,
+                    },
+                });
+
+                if (emailExists) {
+                    throw new EmailAlreadyExistApiError();
+                }
+
+                user.email = req.body.email;
+            }
+
+            if (req.body.username && req.body.username !== user.username) {
+                const usernameExists = await UserModel.findOne({
+                    where: {
+                        username: req.body.username,
+                    },
+                });
+
+                if (usernameExists) {
+                    throw new UsernameAlreadyExistApiError();
+                }
+
+                user.username = req.body.username;
+            }
+
+            if (req.body.password) {
+                const hashPassword = await bcrypt.hash(req.body.password, 10);
+                user.password = hashPassword;
+            }
+
+            if (req.body.isAdmin && req.body.isAdmin !== user.isAdmin) {
+                user.isAdmin = req.body.isAdmin;
+            }
+
+            await user.save();
+
+            return AdminUserDtoSchema.parse(user);
         },
     );
 }) satisfies FastifyPluginAsync;
