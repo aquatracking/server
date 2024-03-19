@@ -294,4 +294,8 @@ export default (async (fastify) => {
             return UserDtoSchema.parse(req.user);
         },
     );
+
+    instance.register(import("./me/session"), {
+        prefix: "/session",
+    });
 }) satisfies FastifyPluginAsync;

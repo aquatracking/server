@@ -1,0 +1,145 @@
+import { FastifyPluginAsync } from "fastify";
+import { ZodTypeProvider } from "fastify-type-provider-zod";
+import { z } from "zod";
+import { UserSessionDtoSchema } from "../../../dto/userSession/userSessionDto";
+import { NotSessionLoggerUserApiError } from "../../../errors/ApiError/NotSessionLoggerUserApiError";
+import { UserSessionNotFoundApiError } from "../../../errors/ApiError/UserSessionNotFoundApiError";
+import { UserSessionModel } from "../../../model/UserSessionModel";
+
+export default (async (fastify) => {
+    const instance = fastify.withTypeProvider<ZodTypeProvider>();
+
+    instance.get(
+        "/",
+        {
+            schema: {
+                tags: ["users", "sessions"],
+                description: "Get the current user's sessions.",
+                response: {
+                    200: UserSessionDtoSchema.array(),
+                },
+            },
+        },
+        async function (req) {
+            const sessions = await req.user!.getUserSessionModels();
+
+            const parsedSessions = sessions.map((session) => {
+                const parsed = UserSessionDtoSchema.parse(session);
+                parsed.current = session.id === req.session?.id;
+
+                return parsed;
+            });
+
+            return parsedSessions;
+        },
+    );
+
+    instance.get(
+        "/:id",
+        {
+            schema: {
+                tags: ["users", "sessions"],
+                description: "Get a session.",
+                params: z.object({
+                    id: z.string().uuid(),
+                }),
+                response: {
+                    200: UserSessionDtoSchema,
+                    404: UserSessionNotFoundApiError.schema,
+                },
+            },
+        },
+        async function (req) {
+            const session = await UserSessionModel.findOne({
+                where: {
+                    id: req.params.id,
+                    userId: req.user!.id,
+                },
+            });
+
+            if (!session) {
+                throw new UserSessionNotFoundApiError();
+            }
+
+            const parsed = UserSessionDtoSchema.parse(session);
+            parsed.current = session.id === req.session?.id;
+
+            return parsed;
+        },
+    );
+
+    instance.get(
+        "/current",
+        {
+            schema: {
+                tags: ["users", "sessions"],
+                description: "Get the current user's session.",
+                response: {
+                    200: UserSessionDtoSchema,
+                    403: NotSessionLoggerUserApiError.schema,
+                },
+            },
+        },
+        async function (req) {
+            if (!req.session) {
+                throw new NotSessionLoggerUserApiError();
+            }
+
+            const parsed = UserSessionDtoSchema.parse(req.session);
+            parsed.current = true;
+
+            return parsed;
+        },
+    );
+
+    instance.delete(
+        "/",
+        {
+            schema: {
+                tags: ["users", "sessions"],
+                description: "Delete all the current user's sessions.",
+                response: {
+                    204: z.void(),
+                },
+            },
+        },
+        async function (req, res) {
+            await req.user!.destroyAllSessions();
+
+            res.status(204).send();
+        },
+    );
+
+    instance.delete(
+        "/:id",
+        {
+            schema: {
+                tags: ["users", "sessions"],
+                description: "Delete a session.",
+                params: z.object({
+                    id: z.string().uuid(),
+                }),
+                response: {
+                    204: z.void(),
+                    404: UserSessionNotFoundApiError.schema,
+                },
+            },
+        },
+        async function (req, res) {
+            const session = await UserSessionModel.findOne({
+                where: {
+                    id: req.params.id,
+                    userId: req.user!.id,
+                },
+            });
+
+            if (!session) {
+                throw new UserSessionNotFoundApiError();
+            }
+
+            await session.destroy();
+
+            res.status(204).send();
+        },
+    );
+}) satisfies FastifyPluginAsync;

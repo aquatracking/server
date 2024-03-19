@@ -36,6 +36,8 @@ export class UserModel extends Model<
     declare getApplicationModels: HasManyGetAssociationsMixin<ApplicationModel>;
     declare createApplicationModel: HasManyCreateAssociationMixin<ApplicationModel>;
 
+    declare getUserSessionModels: HasManyGetAssociationsMixin<UserSessionModel>;
+
     async checkPassword(password: string): Promise<void> {
         const isPasswordValid = await bcrypt.compare(password, this.password);
         if (!isPasswordValid) {

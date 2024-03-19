@@ -8,6 +8,7 @@ import {
 } from "fastify-type-provider-zod";
 import fs from "fs";
 import cron from "node-cron";
+import { isAdminLoggedIn } from "./auth/isAdminLoggedIn";
 import { isApplicationLoggedIn } from "./auth/isApplicationLoggedIn";
 import { isEmailValidated } from "./auth/isEmailValidated";
 import { isSessionLoggedIn } from "./auth/isSessionLoggedIn";
@@ -17,8 +18,8 @@ import { BiotopeModel } from "./model/BiotopeModel";
 import { EmailValidationOTPModel } from "./model/EmailValidationOTPModel";
 import { MeasurementTypeModel } from "./model/MeasurementTypeModel";
 import { UserModel } from "./model/UserModel";
+import { UserSessionModel } from "./model/UserSessionModel";
 import Db from "./model/db";
-import { isAdminLoggedIn } from "./auth/isAdminLoggedIn";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync(".env")) {
@@ -39,6 +40,7 @@ ensureValidEnv();
 declare module "fastify" {
     export interface FastifyRequest {
         user?: UserModel;
+        session?: UserSessionModel;
         biotope?: BiotopeModel;
         measurementType?: MeasurementTypeModel;
     }

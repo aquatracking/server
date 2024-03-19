@@ -31,4 +31,5 @@ export const isSessionLoggedIn = (async (req, res) => {
     await session.save();
 
     req.user = user;
+    req.session = session;
 }) satisfies FastifyAuthFunction;
