@@ -16,6 +16,7 @@ import { UserModel } from "../model/UserModel";
 import { UserSessionModel } from "../model/UserSessionModel";
 import UserTokenUtil from "../utils/UserTokenUtil";
 import { NotLoggedApiError } from "../errors/ApiError/NotLoggedApiError";
+import { UAParser } from "ua-parser-js";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -133,8 +134,16 @@ export default (async (fastify) => {
                 httpOnly: true,
             });
 
+            // Get User Agent
+            const ua = new UAParser(req.headers["user-agent"]);
+            const browser = ua.getBrowser();
+            const os = ua.getOS();
+
             UserSessionModel.create({
-                name: "Unknown device",
+                name:
+                    browser.name || os.name
+                        ? `${browser.name ?? "Unknown"} - ${os.name ?? "Unknown"}`
+                        : "Unknown",
                 userId: userDto.id,
                 token: token,
             });
