@@ -256,6 +256,7 @@ export default (async (fastify) => {
                 }),
                 response: {
                     204: z.void(),
+                    401: z.union([z.string(), z.number()]),
                     403: z.union([
                         WrongPasswordApiError.schema,
                         WrongOTPApiError.schema,

@@ -20,6 +20,10 @@ import { MeasurementTypeModel } from "./model/MeasurementTypeModel";
 import { UserModel } from "./model/UserModel";
 import { UserSessionModel } from "./model/UserSessionModel";
 import Db from "./model/db";
+import { injectSchemaInRouteOption } from "./utils/routeOptionInjection";
+import { NotLoggedApiError } from "./errors/ApiError/NotLoggedApiError";
+import { EmailNotValidatedApiError } from "./errors/ApiError/EmailNotValidatedApiError";
+import { UserNotAdminApiError } from "./errors/ApiError/UserNotAdminApiError";
 
 // - - - - - Environment variables - - - - - //
 if (fs.existsSync(".env")) {
@@ -152,12 +156,28 @@ declare module "fastify" {
             instance.auth([isSessionLoggedIn, isApplicationLoggedIn]),
         );
 
+        instance.addHook("onRoute", (routeOptions) => {
+            injectSchemaInRouteOption(
+                routeOptions,
+                401,
+                NotLoggedApiError.schema,
+            );
+        });
+
         await fastify.register(import("./routes/users/me"), {
             prefix: "/users/me",
         });
 
         instance.register(async (instance) => {
             instance.addHook("preHandler", instance.auth([isEmailValidated]));
+
+            instance.addHook("onRoute", (routeOptions) => {
+                injectSchemaInRouteOption(
+                    routeOptions,
+                    403,
+                    EmailNotValidatedApiError.schema,
+                );
+            });
 
             await fastify.register(import("./routes/applications"), {
                 prefix: "/applications",
@@ -177,6 +197,14 @@ declare module "fastify" {
                         "preHandler",
                         instance.auth([isAdminLoggedIn]),
                     );
+
+                    instance.addHook("onRoute", (routeOptions) => {
+                        injectSchemaInRouteOption(
+                            routeOptions,
+                            403,
+                            UserNotAdminApiError.schema,
+                        );
+                    });
 
                     await fastify.register(import("./routes/admin/users"), {
                         prefix: "/users",
