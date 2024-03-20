@@ -1,5 +1,5 @@
 import { FastifyAuthFunction } from "@fastify/auth";
-import { NotLoggedError } from "../errors/NotLoggedError";
+import { NotLoggedApiError } from "../errors/ApiError/NotLoggedApiError";
 import * as jwt from "../jwt";
 import { UserSessionModel } from "../model/UserSessionModel";
 import { env } from "../env";
@@ -8,7 +8,7 @@ export const isSessionLoggedIn = (async (req, res) => {
     const token = req.cookies["session-token"];
 
     if (!token) {
-        throw new NotLoggedError();
+        throw new NotLoggedApiError();
     }
 
     const jwtUser = await jwt.verify(token, env.ACCESS_TOKEN_SECRET);
@@ -22,8 +22,8 @@ export const isSessionLoggedIn = (async (req, res) => {
 
     const user = await session?.getUserModel();
 
-    if (!session || !user) {
-        throw new NotLoggedError();
+    if (!session || !user || user.deleteAt) {
+        throw new NotLoggedApiError();
     }
 
     session.lastConnectionDate = new Date();
@@ -31,4 +31,5 @@ export const isSessionLoggedIn = (async (req, res) => {
     await session.save();
 
     req.user = user;
+    req.session = session;
 }) satisfies FastifyAuthFunction;
