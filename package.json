@@ -3,9 +3,8 @@
     "version": "1.0.0",
     "main": "app.ts",
     "scripts": {
-        "build": "npx tsc",
-        "dev": "tsx watch src/app.ts",
-        "start": "npx tsc && node dist/app.js"
+        "dev": "bun --watch src/app.ts",
+        "start": "bun src/app.ts"
     },
     "dependencies": {
         "@fastify/auth": "^4.6.1",
@@ -15,7 +14,6 @@
         "@fastify/swagger-ui": "^3.0.0",
         "bcryptjs": "^2.4.3",
         "cookie-parser": "^1.4.6",
-        "dotenv": "^16.4.5",
         "fastify": "^4.26.2",
         "fastify-type-provider-zod": "^1.1.9",
         "jose": "^5.2.3",

@@ -1,31 +1,5 @@
 import { z } from "zod";
 
-export type Env = z.infer<typeof dotEnvSchema>;
-export let env: Env;
-
-export const ensureValidEnv = () => {
-    const result = dotEnvSchema.safeParse(process.env);
-    // !result.success does not work
-    // because strict mode is not enabled
-    if (result.success === false) {
-        const errors = result.error.format();
-
-        const finalErrors = Object.entries(errors)
-            .filter(([key]) => !key.startsWith("_"))
-            .map(
-                ([key, errors]) =>
-                    `${key} -> ${(Array.isArray(errors)
-                        ? errors
-                        : errors._errors
-                    ).join(", ")}`,
-            );
-        console.error("The .env file is not valid:\n", finalErrors.join("\n"));
-        process.exit(1);
-    }
-
-    env = result.data;
-};
-
 const portSchema = z
     .preprocess(
         (value) => {
@@ -56,7 +30,7 @@ const servicePortSchema = z.preprocess(
     z.number().positive().safe().finite(),
 );
 
-const dotEnvSchema = z.object({
+const envSchema = z.object({
     PORT: portSchema,
     MARIADB_HOST: z.string().min(1),
     MARIADB_PORT: servicePortSchema,
@@ -78,3 +52,6 @@ const dotEnvSchema = z.object({
         z.boolean(),
     ),
 });
+
+export type Env = z.infer<typeof envSchema>;
+export const env = envSchema.parse(process.env);

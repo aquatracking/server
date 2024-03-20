@@ -1,4 +1,3 @@
-import * as dotenv from "dotenv";
 import Fastify from "fastify";
 import {
     ZodTypeProvider,
@@ -6,14 +5,16 @@ import {
     serializerCompiler,
     validatorCompiler,
 } from "fastify-type-provider-zod";
-import fs from "fs";
 import cron from "node-cron";
 import { isAdminLoggedIn } from "./auth/isAdminLoggedIn";
 import { isApplicationLoggedIn } from "./auth/isApplicationLoggedIn";
 import { isEmailValidated } from "./auth/isEmailValidated";
 import { isSessionLoggedIn } from "./auth/isSessionLoggedIn";
-import { ensureValidEnv, env } from "./env";
+import { env } from "./env";
 import { ApiError } from "./errors/ApiError/ApiError";
+import { EmailNotValidatedApiError } from "./errors/ApiError/EmailNotValidatedApiError";
+import { NotLoggedApiError } from "./errors/ApiError/NotLoggedApiError";
+import { UserNotAdminApiError } from "./errors/ApiError/UserNotAdminApiError";
 import { BiotopeModel } from "./model/BiotopeModel";
 import { EmailValidationOTPModel } from "./model/EmailValidationOTPModel";
 import { MeasurementTypeModel } from "./model/MeasurementTypeModel";
@@ -21,25 +22,6 @@ import { UserModel } from "./model/UserModel";
 import { UserSessionModel } from "./model/UserSessionModel";
 import Db from "./model/db";
 import { injectSchemaInRouteOption } from "./utils/routeOptionInjection";
-import { NotLoggedApiError } from "./errors/ApiError/NotLoggedApiError";
-import { EmailNotValidatedApiError } from "./errors/ApiError/EmailNotValidatedApiError";
-import { UserNotAdminApiError } from "./errors/ApiError/UserNotAdminApiError";
-
-// - - - - - Environment variables - - - - - //
-if (fs.existsSync(".env")) {
-    console.log("Using .env file to supply config environment variables");
-    dotenv.config();
-} else {
-    console.log(".env file not found, creating one with default values");
-
-    fs.copyFileSync(".env.example", ".env");
-
-    console.log("Please complete the .env file");
-
-    process.exit(1);
-}
-
-ensureValidEnv();
 
 declare module "fastify" {
     export interface FastifyRequest {
