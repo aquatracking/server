@@ -1,6 +1,7 @@
 # Aquatracking - Server
 
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aquatracking_server&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aquatracking_server)
 
 ## Installation for development
 
