@@ -123,6 +123,10 @@ fastify
             finalError.code = "TOO_MANY_REQUESTS";
         }
 
+        if (finalError.statusCode === 500) {
+            console.error(error);
+        }
+
         return reply.status(finalError.statusCode).send(finalError);
     });
 

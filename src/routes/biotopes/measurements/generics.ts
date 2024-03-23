@@ -201,4 +201,8 @@ export default (async (fastify) => {
             res.status(204).send();
         },
     );
+
+    await fastify.register(import("./subscriptions/generic"), {
+        prefix: "/subscriptions",
+    });
 }) satisfies FastifyPluginAsync;
