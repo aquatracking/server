@@ -40,7 +40,7 @@ export default (async (fastify) => {
                 throw new EmailAlreadyVerifiedApiError();
             }
 
-            let oldEmailToken = await EmailValidationOTPModel.findOne({
+            const oldEmailToken = await EmailValidationOTPModel.findOne({
                 where: {
                     email: userEmail,
                 },
@@ -96,7 +96,7 @@ export default (async (fastify) => {
                 throw new EmailAlreadyVerifiedApiError();
             }
 
-            let emailToken = await EmailValidationOTPModel.findOne({
+            const emailToken = await EmailValidationOTPModel.findOne({
                 where: {
                     email: req.user!.email,
                 },
