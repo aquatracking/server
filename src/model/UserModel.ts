@@ -26,8 +26,8 @@ export class UserModel extends Model<
     declare password: string;
     declare verified: CreationOptional<boolean>;
     declare totpEnabled: CreationOptional<boolean>;
-    declare totpSecret?: CreationOptional<string | null>;
-    declare deleteAt?: CreationOptional<Date | null>;
+    declare totpSecret: CreationOptional<string | null>;
+    declare deleteAt: CreationOptional<Date | null>;
     declare isAdmin: CreationOptional<boolean>;
 
     declare getBiotopeModels: HasManyGetAssociationsMixin<BiotopeModel>;

@@ -22,6 +22,7 @@ import { UserModel } from "./model/UserModel";
 import { UserSessionModel } from "./model/UserSessionModel";
 import Db from "./model/db";
 import { injectSchemaInRouteOption } from "./utils/routeOptionInjection";
+import { ZodError } from "zod";
 
 declare module "fastify" {
     export interface FastifyRequest {
@@ -121,6 +122,33 @@ fastify
             finalError.statusCode = 429;
             finalError.error = "Too Many Requests";
             finalError.code = "TOO_MANY_REQUESTS";
+        }
+
+        if (error instanceof ZodError) {
+            let code = "";
+
+            switch (error.validationContext) {
+                case "body":
+                    code = "INVALID_REQUEST_BODY";
+                    break;
+                case "params":
+                    code = "INVALID_REQUEST_PARAMS";
+                    break;
+                case "headers":
+                    code = "INVALID_REQUEST_HEADERS";
+                    break;
+                case "querystring":
+                    code = "INVALID_REQUEST_QUERYSTRING";
+                    break;
+                default:
+                    code = "INVALID_REQUEST";
+                    break;
+            }
+
+            finalError.statusCode = 400;
+            finalError.error = "Bad Request";
+            finalError.code = code;
+            finalError.data = error.issues;
         }
 
         if (finalError.statusCode === 500) {
