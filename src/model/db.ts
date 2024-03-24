@@ -1,16 +1,18 @@
-import { DataTypes, Sequelize } from "sequelize";
+import { DataTypes, QueryInterface, Sequelize } from "sequelize";
+import { MigrationFn, SequelizeStorage, Umzug } from "umzug";
 import { env } from "../env";
 import { ApplicationModel } from "./ApplicationModel";
 import { AquariumModel } from "./AquariumModel";
 import { BiotopeModel } from "./BiotopeModel";
+import { EmailValidationOTPModel } from "./EmailValidationOTPModel";
 import { MeasurementModel } from "./MeasurementModel";
 import { MeasurementSubscriptionModel } from "./MeasurementSubscriptionModel";
 import { MeasurementTypeModel } from "./MeasurementTypeModel";
+import { TerrariumModel } from "./TerrariumModel";
 import { UserModel } from "./UserModel";
 import { UserSessionModel } from "./UserSessionModel";
-import { TerrariumModel } from "./TerrariumModel";
-import { EmailValidationOTPModel } from "./EmailValidationOTPModel";
 
+export type Migration = MigrationFn<QueryInterface>;
 export default class Db {
     private static sequelize: Sequelize;
 
@@ -23,9 +25,21 @@ export default class Db {
                 dialect: "mysql",
                 host: env.MARIADB_HOST,
                 port: env.MARIADB_PORT,
-                logging: false,
+                logging: process.env.SEQUELIZE_LOG === "true",
             },
         );
+
+        const umzug = new Umzug({
+            migrations: {
+                glob: ["../migration/*.ts", { cwd: __dirname }],
+            },
+            context: this.sequelize.getQueryInterface(),
+            storage: new SequelizeStorage({ sequelize: this.sequelize }),
+            logger: console,
+        });
+
+        await umzug.up();
+
         await Db.sequelize.authenticate();
         console.log("Connected to database");
 
@@ -41,15 +55,13 @@ export default class Db {
                 username: {
                     type: DataTypes.STRING,
                     allowNull: false,
-                    unique: true,
                 },
                 email: {
                     type: DataTypes.STRING,
                     allowNull: false,
-                    unique: true,
                 },
                 password: {
-                    type: DataTypes.STRING,
+                    type: DataTypes.TEXT("long"),
                     allowNull: false,
                 },
                 verified: {
@@ -74,7 +86,22 @@ export default class Db {
                     defaultValue: false,
                 },
             },
-            { sequelize, tableName: "users" },
+            {
+                sequelize,
+                tableName: "user",
+                indexes: [
+                    {
+                        unique: true,
+                        fields: ["username"],
+                        name: "unique_user_username",
+                    },
+                    {
+                        unique: true,
+                        fields: ["email"],
+                        name: "unique_user_email",
+                    },
+                ],
+            },
         );
 
         EmailValidationOTPModel.init(
@@ -82,7 +109,6 @@ export default class Db {
                 email: {
                     type: DataTypes.STRING,
                     primaryKey: true,
-                    allowNull: false,
                     references: {
                         model: UserModel,
                         key: "email",
@@ -115,16 +141,16 @@ export default class Db {
                 },
                 firstConnectionDate: {
                     type: DataTypes.DATE,
-                    defaultValue: DataTypes.NOW,
                     allowNull: false,
+                    defaultValue: DataTypes.NOW,
                 },
                 lastConnectionDate: {
                     type: DataTypes.DATE,
-                    defaultValue: DataTypes.NOW,
                     allowNull: false,
+                    defaultValue: DataTypes.NOW,
                 },
                 token: {
-                    type: DataTypes.TEXT,
+                    type: DataTypes.TEXT("long"),
                     allowNull: false,
                 },
                 userId: {
@@ -136,7 +162,17 @@ export default class Db {
                     },
                 },
             },
-            { sequelize, tableName: "user_sessions" },
+            {
+                sequelize,
+                tableName: "user_session",
+                indexes: [
+                    {
+                        unique: true,
+                        fields: ["token"],
+                        name: "unique_user_session_token",
+                    },
+                ],
+            },
         );
         UserModel.hasMany(UserSessionModel, { foreignKey: "userId" });
         UserSessionModel.belongsTo(UserModel, { foreignKey: "userId" });
@@ -154,10 +190,11 @@ export default class Db {
                 },
                 description: {
                     type: DataTypes.STRING,
+                    allowNull: false,
                     defaultValue: "",
                 },
                 token: {
-                    type: DataTypes.TEXT,
+                    type: DataTypes.TEXT("long"),
                     allowNull: false,
                 },
                 userId: {
@@ -169,7 +206,17 @@ export default class Db {
                     },
                 },
             },
-            { sequelize, tableName: "applications" },
+            {
+                sequelize,
+                tableName: "application",
+                indexes: [
+                    {
+                        unique: true,
+                        fields: ["token"],
+                        name: "unique_application_token",
+                    },
+                ],
+            },
         );
         UserModel.hasMany(ApplicationModel, { foreignKey: "userId" });
         ApplicationModel.belongsTo(UserModel, { foreignKey: "userId" });
@@ -196,7 +243,6 @@ export default class Db {
                 },
                 image: {
                     type: DataTypes.BLOB,
-                    allowNull: true,
                 },
                 startedDate: {
                     type: DataTypes.DATE,
@@ -218,7 +264,7 @@ export default class Db {
                     },
                 },
             },
-            { sequelize, tableName: "biotopes" },
+            { sequelize, tableName: "biotope" },
         );
         UserModel.hasMany(BiotopeModel, { foreignKey: "userId" });
         BiotopeModel.belongsTo(UserModel, { foreignKey: "userId" });
@@ -235,6 +281,7 @@ export default class Db {
                 },
                 salt: {
                     type: DataTypes.BOOLEAN,
+                    allowNull: false,
                     defaultValue: false,
                 },
             },
@@ -287,9 +334,11 @@ export default class Db {
                 },
                 description: {
                     type: DataTypes.STRING,
+                    allowNull: false,
+                    defaultValue: "",
                 },
             },
-            { sequelize, tableName: "measurement_types" },
+            { sequelize, tableName: "measurement_type" },
         );
 
         MeasurementSubscriptionModel.init(
@@ -321,7 +370,7 @@ export default class Db {
                     type: DataTypes.DOUBLE,
                 },
             },
-            { sequelize, tableName: "measurement_subscriptions" },
+            { sequelize, tableName: "measurement_subscription" },
         );
         BiotopeModel.hasMany(MeasurementSubscriptionModel, {
             foreignKey: "biotopeId",
@@ -345,6 +394,7 @@ export default class Db {
                 },
                 biotopeId: {
                     type: DataTypes.UUID,
+                    allowNull: false,
                     references: {
                         model: BiotopeModel,
                         key: "id",
@@ -352,6 +402,7 @@ export default class Db {
                 },
                 measurementTypeCode: {
                     type: DataTypes.STRING,
+                    allowNull: false,
                     references: {
                         model: MeasurementTypeModel,
                         key: "code",
@@ -363,11 +414,11 @@ export default class Db {
                 },
                 measuredAt: {
                     type: DataTypes.DATE,
-                    defaultValue: DataTypes.NOW,
                     allowNull: false,
+                    defaultValue: DataTypes.NOW,
                 },
             },
-            { sequelize, tableName: "measurements" },
+            { sequelize, tableName: "measurement" },
         );
         BiotopeModel.hasMany(MeasurementModel, { foreignKey: "biotopeId" });
         MeasurementModel.belongsTo(BiotopeModel, { foreignKey: "biotopeId" });
@@ -377,8 +428,6 @@ export default class Db {
         MeasurementModel.belongsTo(MeasurementTypeModel, {
             foreignKey: "measurementTypeCode",
         });
-
-        await sequelize.sync();
 
         console.log("Database initialized");
     }

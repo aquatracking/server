@@ -14,7 +14,7 @@ export class ApplicationModel extends Model<
 > {
     declare id: CreationOptional<string>;
     declare name: string;
-    declare description: string;
+    declare description: CreationOptional<string>;
     declare token: string;
 
     declare userId: ForeignKey<UserModel["id"]>;

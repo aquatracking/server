@@ -126,26 +126,28 @@ export default (async (fastify) => {
 
             const userDto = UserDtoSchema.parse(user);
 
-            // Send cookies
+            // Generate token
             const token = await UserTokenUtil.generateSessionToken(userDto);
-            res.setCookie("session-token", token, {
-                maxAge: 1000 * 60 * 60 * 24 * 7 * 365,
-                path: "/",
-                httpOnly: true,
-            });
 
             // Get User Agent
             const ua = new UAParser(req.headers["user-agent"]);
             const browser = ua.getBrowser();
             const os = ua.getOS();
 
-            UserSessionModel.create({
+            await UserSessionModel.create({
                 name:
                     browser.name || os.name
                         ? `${browser.name ?? "Unknown"} - ${os.name ?? "Unknown"}`
                         : "Unknown",
                 userId: userDto.id,
                 token: token,
+            });
+
+            // Send cookies
+            res.setCookie("session-token", token, {
+                maxAge: 1000 * 60 * 60 * 24 * 7 * 365,
+                path: "/",
+                httpOnly: true,
             });
 
             // Send Mail

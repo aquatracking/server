@@ -1,43 +1,46 @@
 {
-    "name": "aquatracking-server",
-    "version": "1.0.0",
-    "main": "app.ts",
-    "scripts": {
-        "dev": "bun --watch src/app.ts",
-        "start": "bun src/app.ts"
-    },
-    "dependencies": {
-        "@fastify/auth": "^4.6.1",
-        "@fastify/cookie": "^9.3.1",
-        "@fastify/rate-limit": "^9.1.0",
-        "@fastify/swagger": "^8.14.0",
-        "@fastify/swagger-ui": "^3.0.0",
-        "bcryptjs": "^2.4.3",
-        "cookie-parser": "^1.4.6",
-        "fastify": "^4.26.2",
-        "fastify-type-provider-zod": "^1.1.9",
-        "jose": "^5.2.3",
-        "morgan": "^1.10.0",
-        "mysql2": "^3.9.2",
-        "node-cron": "^3.0.3",
-        "nodemailer": "^6.9.12",
-        "otp-generator": "^4.0.1",
-        "otplib": "^12.0.1",
-        "sequelize": "^6.37.1",
-        "sharp": "^0.33.2",
-        "ua-parser-js": "^1.0.37",
-        "zod": "^3.22.4"
-    },
-    "devDependencies": {
-        "@types/bcryptjs": "^2.4.6",
-        "@types/cookie-parser": "^1.4.7",
-        "@types/node": "^20.11.19",
-        "@types/node-cron": "^3.0.11",
-        "@types/nodemailer": "^6.4.14",
-        "@types/otp-generator": "^4.0.2",
-        "@types/ua-parser-js": "^0.7.39",
-        "prettier": "3.2.5",
-        "tsx": "^4.7.1",
-        "typescript": "^5.4.2"
-    }
+  "name": "aquatracking-server",
+  "version": "1.0.0",
+  "main": "app.ts",
+  "scripts": {
+    "dev": "bun --watch src/app.ts",
+    "start": "bun src/app.ts"
+  },
+  "dependencies": {
+    "@fastify/auth": "^4.6.1",
+    "@fastify/cookie": "^9.3.1",
+    "@fastify/rate-limit": "^9.1.0",
+    "@fastify/swagger": "^8.14.0",
+    "@fastify/swagger-ui": "^3.0.0",
+    "@types/uuid": "^9.0.8",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "fastify": "^4.26.2",
+    "fastify-type-provider-zod": "^1.1.9",
+    "jose": "^5.2.3",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.9.2",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.12",
+    "otp-generator": "^4.0.1",
+    "otplib": "^12.0.1",
+    "sequelize": "^6.37.1",
+    "sharp": "^0.33.2",
+    "ua-parser-js": "^1.0.37",
+    "umzug": "^3.6.1",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/node": "^20.11.19",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^6.4.14",
+    "@types/otp-generator": "^4.0.2",
+    "@types/ua-parser-js": "^0.7.39",
+    "prettier": "3.2.5",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.2"
+  }
 }
