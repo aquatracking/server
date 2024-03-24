@@ -12,8 +12,9 @@ import {
 } from "sequelize";
 import { AquariumModel } from "./AquariumModel";
 import { MeasurementModel } from "./MeasurementModel";
-import { UserModel } from "./UserModel";
+import { MeasurementSubscriptionModel } from "./MeasurementSubscriptionModel";
 import { TerrariumModel } from "./TerrariumModel";
+import { UserModel } from "./UserModel";
 
 export class BiotopeModel extends Model<
     InferAttributes<BiotopeModel>,
@@ -38,6 +39,9 @@ export class BiotopeModel extends Model<
 
     declare createMeasurementModel: HasManyCreateAssociationMixin<MeasurementModel>;
     declare getMeasurementModels: HasManyGetAssociationsMixin<MeasurementModel>;
+
+    declare getMeasurementSubscriptionModels: HasManyGetAssociationsMixin<MeasurementSubscriptionModel>;
+    declare createMeasurementSubscriptionModel: HasManyCreateAssociationMixin<MeasurementSubscriptionModel>;
 
     declare AquariumModel?: NonAttribute<AquariumModel>;
     declare TerrariumModel?: NonAttribute<TerrariumModel>;

@@ -310,6 +310,10 @@ export default class Db {
                         key: "code",
                     },
                 },
+                order: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                },
                 min: {
                     type: DataTypes.DOUBLE,
                 },

@@ -123,6 +123,10 @@ fastify
             finalError.code = "TOO_MANY_REQUESTS";
         }
 
+        if (finalError.statusCode === 500) {
+            console.error(error);
+        }
+
         return reply.status(finalError.statusCode).send(finalError);
     });
 
@@ -160,6 +164,10 @@ await fastify.register(async (instance) => {
             prefix: "/applications",
         });
 
+        await fastify.register(import("./routes/measurementTypes"), {
+            prefix: "/measurementTypes",
+        });
+
         await fastify.register(import("./routes/biotopes/aquariums"), {
             prefix: "/aquariums",
         });
@@ -186,6 +194,13 @@ await fastify.register(async (instance) => {
                 await fastify.register(import("./routes/admin/users"), {
                     prefix: "/users",
                 });
+
+                await fastify.register(
+                    import("./routes/admin/measurementTypes"),
+                    {
+                        prefix: "/measurementTypes",
+                    },
+                );
             },
             { prefix: "/admin" },
         );
