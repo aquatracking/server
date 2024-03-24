@@ -6,23 +6,31 @@ import {
     validatorCompiler,
 } from "fastify-type-provider-zod";
 import cron from "node-cron";
+import { ForeignKeyConstraintError, UniqueConstraintError } from "sequelize";
+import { ZodError } from "zod";
 import { isAdminLoggedIn } from "./auth/isAdminLoggedIn";
 import { isApplicationLoggedIn } from "./auth/isApplicationLoggedIn";
 import { isEmailValidated } from "./auth/isEmailValidated";
 import { isSessionLoggedIn } from "./auth/isSessionLoggedIn";
 import { env } from "./env";
 import { ApiError } from "./errors/ApiError/ApiError";
+import { EmailAlreadyExistApiError } from "./errors/ApiError/EmailAlreadyExistApiError";
 import { EmailNotValidatedApiError } from "./errors/ApiError/EmailNotValidatedApiError";
 import { NotLoggedApiError } from "./errors/ApiError/NotLoggedApiError";
 import { UserNotAdminApiError } from "./errors/ApiError/UserNotAdminApiError";
+import { UsernameAlreadyExistApiError } from "./errors/ApiError/UsernameAlreadyExistApiError";
 import { BiotopeModel } from "./model/BiotopeModel";
 import { EmailValidationOTPModel } from "./model/EmailValidationOTPModel";
 import { MeasurementTypeModel } from "./model/MeasurementTypeModel";
 import { UserModel } from "./model/UserModel";
 import { UserSessionModel } from "./model/UserSessionModel";
 import Db from "./model/db";
-import { injectSchemaInRouteOption } from "./utils/routeOptionInjection";
-import { ZodError } from "zod";
+import { injectResponseSchemaInRouteOption } from "./utils/routeOptionInjection";
+import { InvalidRequestBodyApiError } from "./errors/ApiError/InvalidRequestBodyApiError";
+import { InvalidRequestHeadersApiError } from "./errors/ApiError/InvalidRequestHeadersApiError";
+import { InvalidRequestParamsApiError } from "./errors/ApiError/InvalidRequestParamsApiError";
+import { InvalidRequestQueryStringApiError } from "./errors/ApiError/InvalidRequestQueryStringApiError";
+import { CantDeleteUsedMeasurementTypeApiError } from "./errors/ApiError/CantDeleteUsedMeasurementTypeApiError";
 
 declare module "fastify" {
     export interface FastifyRequest {
@@ -151,6 +159,34 @@ fastify
             finalError.data = error.issues;
         }
 
+        if (error instanceof UniqueConstraintError) {
+            finalError.statusCode = 409;
+            finalError.error = "Conflict";
+
+            switch (error.errors[0].path) {
+                case "unique_user_email":
+                    finalError.code = new EmailAlreadyExistApiError().code;
+                    break;
+                case "unique_user_username":
+                    finalError.code = new UsernameAlreadyExistApiError().code;
+                    break;
+                default:
+                    finalError.statusCode = 500;
+                    finalError.error = "Internal Server Error";
+                    finalError.code = "INTERNAL_SERVER_ERROR";
+                    break;
+            }
+        }
+
+        if (error instanceof ForeignKeyConstraintError) {
+            if (error.table === "measurement_type") {
+                const e = new CantDeleteUsedMeasurementTypeApiError();
+                finalError.statusCode = e.statusCode;
+                finalError.error = e.error;
+                finalError.code = e.code;
+            }
+        }
+
         if (finalError.statusCode === 500) {
             console.error(error);
         }
@@ -159,6 +195,37 @@ fastify
     });
 
 // - - - - - Routes - - - - - //
+fastify.addHook("onRoute", (routeOptions: any) => {
+    if (routeOptions.schema?.body) {
+        injectResponseSchemaInRouteOption(
+            routeOptions,
+            400,
+            InvalidRequestBodyApiError.schema,
+        );
+    }
+    if (routeOptions.schema?.querystring) {
+        injectResponseSchemaInRouteOption(
+            routeOptions,
+            400,
+            InvalidRequestQueryStringApiError.schema,
+        );
+    }
+    if (routeOptions.schema?.headers) {
+        injectResponseSchemaInRouteOption(
+            routeOptions,
+            400,
+            InvalidRequestHeadersApiError.schema,
+        );
+    }
+    if (routeOptions.schema?.params) {
+        injectResponseSchemaInRouteOption(
+            routeOptions,
+            400,
+            InvalidRequestParamsApiError.schema,
+        );
+    }
+});
+
 await fastify.register(import("./routes/auth"), {
     prefix: "/auth",
 });
@@ -170,7 +237,11 @@ await fastify.register(async (instance) => {
     );
 
     instance.addHook("onRoute", (routeOptions) => {
-        injectSchemaInRouteOption(routeOptions, 401, NotLoggedApiError.schema);
+        injectResponseSchemaInRouteOption(
+            routeOptions,
+            401,
+            NotLoggedApiError.schema,
+        );
     });
 
     await fastify.register(import("./routes/users/me"), {
@@ -181,7 +252,7 @@ await fastify.register(async (instance) => {
         instance.addHook("preHandler", instance.auth([isEmailValidated]));
 
         instance.addHook("onRoute", (routeOptions) => {
-            injectSchemaInRouteOption(
+            injectResponseSchemaInRouteOption(
                 routeOptions,
                 403,
                 EmailNotValidatedApiError.schema,
@@ -212,7 +283,7 @@ await fastify.register(async (instance) => {
                 );
 
                 instance.addHook("onRoute", (routeOptions) => {
-                    injectSchemaInRouteOption(
+                    injectResponseSchemaInRouteOption(
                         routeOptions,
                         403,
                         UserNotAdminApiError.schema,

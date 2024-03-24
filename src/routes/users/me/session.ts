@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { UserSessionDtoSchema } from "../../../dto/userSession/userSessionDto";
-import { NotSessionLoggerUserApiError } from "../../../errors/ApiError/NotSessionLoggerUserApiError";
+import { NotSessionLoggedUserApiError } from "../../../errors/ApiError/NotSessionLoggedUserApiError";
 import { UserSessionNotFoundApiError } from "../../../errors/ApiError/UserSessionNotFoundApiError";
 import { UserSessionModel } from "../../../model/UserSessionModel";
 
@@ -76,13 +76,13 @@ export default (async (fastify) => {
                 description: "Get the current user's session.",
                 response: {
                     200: UserSessionDtoSchema,
-                    403: NotSessionLoggerUserApiError.schema,
+                    403: NotSessionLoggedUserApiError.schema,
                 },
             },
         },
         async function (req) {
             if (!req.session) {
-                throw new NotSessionLoggerUserApiError();
+                throw new NotSessionLoggedUserApiError();
             }
 
             const parsed = UserSessionDtoSchema.parse(req.session);

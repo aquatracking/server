@@ -5,6 +5,7 @@ import { z } from "zod";
 import { MeasurementCreateDtoSchema } from "../../../dto/measurement/MeasurementCreateDto";
 import { MeasurementDtoSchema } from "../../../dto/measurement/MeasurementDto";
 import { MeasurementModel } from "../../../model/MeasurementModel";
+import { MeasurementNotFoundApiError } from "../../../errors/ApiError/MeasurementNotFoundApiError";
 
 const measurementsQueryStringSchema = z.object({
     measurementTypeCode: z
@@ -32,9 +33,6 @@ export default (async (fastify) => {
             schema: {
                 tags: [`${schemaBiotopeType}s`],
                 description: `Get ${schemaBiotopeType}'s measurements. Order by most recent measuredAt to least recent measuredAt`,
-                params: z.object({
-                    id: z.string().uuid(),
-                }),
                 querystring: measurementsQueryStringSchema,
                 response: {
                     200: MeasurementDtoSchema.array(),
@@ -76,9 +74,6 @@ export default (async (fastify) => {
             schema: {
                 tags: [`${schemaBiotopeType}s`],
                 description: `Get last ${schemaBiotopeType}'s measurement.`,
-                params: z.object({
-                    id: z.string().uuid(),
-                }),
                 querystring: measurementsQueryStringSchema,
                 response: {
                     200: MeasurementDtoSchema.optional(),
@@ -122,11 +117,11 @@ export default (async (fastify) => {
                 tags: [`${schemaBiotopeType}s`],
                 description: `Get measurement by id`,
                 params: z.object({
-                    id: z.string().uuid(),
                     measurementId: z.string().uuid(),
                 }),
                 response: {
                     200: MeasurementDtoSchema,
+                    404: MeasurementNotFoundApiError.schema,
                 },
             },
         },
@@ -139,7 +134,7 @@ export default (async (fastify) => {
                     biotopeId: biotope.id,
                 },
             });
-            if (!measurement) return res.status(404).send();
+            if (!measurement) throw new MeasurementNotFoundApiError();
 
             res.send(MeasurementDtoSchema.parse(measurement));
         },
@@ -151,9 +146,6 @@ export default (async (fastify) => {
             schema: {
                 tags: [`${schemaBiotopeType}s`],
                 description: `Add ${schemaBiotopeType}'s measurement`,
-                params: z.object({
-                    id: z.string().uuid(),
-                }),
                 body: MeasurementCreateDtoSchema,
                 response: {
                     200: MeasurementDtoSchema,
@@ -176,11 +168,11 @@ export default (async (fastify) => {
                 tags: [`${schemaBiotopeType}s`],
                 description: `Delete measurement by id`,
                 params: z.object({
-                    id: z.string().uuid(),
                     measurementId: z.string().uuid(),
                 }),
                 response: {
                     204: z.null(),
+                    404: MeasurementNotFoundApiError.schema,
                 },
             },
         },
@@ -194,7 +186,7 @@ export default (async (fastify) => {
                 },
             });
 
-            if (!measurement) return res.status(404).send();
+            if (!measurement) throw new MeasurementNotFoundApiError();
 
             await measurement.destroy();
 

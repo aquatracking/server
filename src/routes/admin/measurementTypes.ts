@@ -2,10 +2,11 @@ import { FastifyPluginAsync } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { MeasurementTypeCreateDtoSchema } from "../../dto/measurementType/MeasurementTypeCreateDto";
 import { MeasurementTypeDtoSchema } from "../../dto/measurementType/MeasurementTypeDto";
-import { MeasurementTypeModel } from "../../model/MeasurementTypeModel";
 import { MeasurementTypeUpdateDtoSchema } from "../../dto/measurementType/MeasurementTypeUpdateDto";
+import { MeasurementTypeModel } from "../../model/MeasurementTypeModel";
 
 import { z } from "zod";
+import { CantDeleteUsedMeasurementTypeApiError } from "../../errors/ApiError/CantDeleteUsedMeasurementTypeApiError";
 import { MeasurementTypeNotFoundApiError } from "../../errors/ApiError/MeasurementTypeNotFoundApiError";
 
 export default (async (fastify) => {
@@ -77,6 +78,7 @@ export default (async (fastify) => {
                 response: {
                     204: z.void(),
                     404: MeasurementTypeNotFoundApiError.schema,
+                    409: CantDeleteUsedMeasurementTypeApiError.schema,
                 },
             },
         },

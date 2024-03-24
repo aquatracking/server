@@ -1,6 +1,6 @@
 import { ZodTypeAny, z } from "zod";
 
-export function injectSchemaInRouteOption(
+export function injectResponseSchemaInRouteOption(
     routeOptions: any,
     statusCode: number,
     schema: z.ZodType,
@@ -46,4 +46,27 @@ export function injectSchemaInRouteOption(
         routeOptions.schema.response[statusCode],
         schema,
     ]);
+}
+
+export function injectParamSchemaInRouteOption(
+    routeOptions: any,
+    schema: z.ZodObject<any, any, any>,
+): void {
+    if (routeOptions.method === "HEAD" || routeOptions.method === "OPTIONS") {
+        return;
+    }
+
+    if (!routeOptions.schema) {
+        routeOptions.schema = {};
+    }
+
+    if (!routeOptions.schema.params) {
+        routeOptions.schema.params = z.object({});
+    }
+
+    if (!(routeOptions.schema.params instanceof z.ZodObject)) {
+        throw new Error("Not a valid Zod object in route options.");
+    }
+
+    routeOptions.schema.params = routeOptions.schema.params.merge(schema);
 }

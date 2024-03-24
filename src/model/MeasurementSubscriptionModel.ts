@@ -18,8 +18,8 @@ export class MeasurementSubscriptionModel extends Model<
     declare measurementTypeCode: ForeignKey<MeasurementTypeModel["code"]>;
 
     declare order: number;
-    declare min?: CreationOptional<number | null>;
-    declare max?: CreationOptional<number | null>;
+    declare min: CreationOptional<number | null>;
+    declare max: CreationOptional<number | null>;
 
     declare MeasurementTypeModel?: NonAttribute<MeasurementTypeModel>;
 }

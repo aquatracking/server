@@ -5,8 +5,14 @@ import { z } from "zod";
 import { TerrariumCreateDtoSchema } from "../../dto/terrarium/TerrariumCreateDto";
 import { TerrariumDtoSchema } from "../../dto/terrarium/TerrariumDto";
 import { TerrariumUpdateDtoSchema } from "../../dto/terrarium/TerrariumUpdateDto";
-import { TerrariumModel } from "../../model/TerrariumModel";
+import { TerrariumNotFoundApiError } from "../../errors/ApiError/TerrariumNotFoundApiError";
+import { UserNotOwnerOfTerrariumApiError } from "../../errors/ApiError/UserNotOwnerOTerrariumApiError";
 import { BiotopeModel } from "../../model/BiotopeModel";
+import { TerrariumModel } from "../../model/TerrariumModel";
+import {
+    injectParamSchemaInRouteOption,
+    injectResponseSchemaInRouteOption,
+} from "../../utils/routeOptionInjection";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -97,12 +103,33 @@ export default (async (fastify) => {
                     },
                 });
 
-                if (!biotope) return res.status(404).send();
+                if (!biotope) throw new TerrariumNotFoundApiError();
                 if (biotope.userId !== req.user!.id) {
-                    return res.status(403).send();
+                    throw new UserNotOwnerOfTerrariumApiError();
                 }
 
                 req.biotope = biotope;
+            });
+
+            instance.addHook("onRoute", (routeOptions) => {
+                injectParamSchemaInRouteOption(
+                    routeOptions,
+                    z.object({
+                        id: z.string().uuid(),
+                    }),
+                );
+
+                injectResponseSchemaInRouteOption(
+                    routeOptions,
+                    403,
+                    UserNotOwnerOfTerrariumApiError.schema,
+                );
+
+                injectResponseSchemaInRouteOption(
+                    routeOptions,
+                    404,
+                    TerrariumNotFoundApiError.schema,
+                );
             });
 
             instance.get(
@@ -111,9 +138,6 @@ export default (async (fastify) => {
                     schema: {
                         tags: ["terrariums"],
                         description: "Get an terrarium",
-                        params: z.object({
-                            id: z.string().uuid(),
-                        }),
                         response: {
                             200: TerrariumDtoSchema,
                         },
@@ -137,9 +161,6 @@ export default (async (fastify) => {
                     schema: {
                         tags: ["terrariums"],
                         description: "Update an terrarium",
-                        params: z.object({
-                            id: z.string().uuid(),
-                        }),
                         body: TerrariumUpdateDtoSchema,
                         response: {
                             200: TerrariumDtoSchema,
@@ -167,9 +188,6 @@ export default (async (fastify) => {
                     schema: {
                         tags: ["terrariums"],
                         description: "Archive an terrarium",
-                        params: z.object({
-                            id: z.string().uuid(),
-                        }),
                         response: {
                             200: TerrariumDtoSchema,
                         },
@@ -196,9 +214,6 @@ export default (async (fastify) => {
                     schema: {
                         tags: ["terrariums"],
                         description: "Unarchive an terrarium",
-                        params: z.object({
-                            id: z.string().uuid(),
-                        }),
                         response: {
                             200: TerrariumDtoSchema,
                         },

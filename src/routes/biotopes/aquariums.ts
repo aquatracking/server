@@ -7,6 +7,12 @@ import { AquariumDtoSchema } from "../../dto/aquarium/AquariumDto";
 import { AquariumUpdateDtoSchema } from "../../dto/aquarium/AquariumUpdateDto";
 import { AquariumModel } from "../../model/AquariumModel";
 import { BiotopeModel } from "../../model/BiotopeModel";
+import {
+    injectParamSchemaInRouteOption,
+    injectResponseSchemaInRouteOption,
+} from "../../utils/routeOptionInjection";
+import { UserNotOwnerOfAquariumApiError } from "../../errors/ApiError/UserNotOwnerOfAquariumApiError";
+import { AquariumNotFoundApiError } from "../../errors/ApiError/AquariumNotFoundApiError";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -97,12 +103,33 @@ export default (async (fastify) => {
                     },
                 });
 
-                if (!biotope) return res.status(404).send();
+                if (!biotope) throw new AquariumNotFoundApiError();
                 if (biotope.userId !== req.user!.id) {
-                    return res.status(403).send();
+                    throw new UserNotOwnerOfAquariumApiError();
                 }
 
                 req.biotope = biotope;
+            });
+
+            instance.addHook("onRoute", (routeOptions) => {
+                injectParamSchemaInRouteOption(
+                    routeOptions,
+                    z.object({
+                        id: z.string().uuid(),
+                    }),
+                );
+
+                injectResponseSchemaInRouteOption(
+                    routeOptions,
+                    403,
+                    UserNotOwnerOfAquariumApiError.schema,
+                );
+
+                injectResponseSchemaInRouteOption(
+                    routeOptions,
+                    404,
+                    AquariumNotFoundApiError.schema,
+                );
             });
 
             instance.get(
@@ -111,9 +138,6 @@ export default (async (fastify) => {
                     schema: {
                         tags: ["aquariums"],
                         description: "Get an aquarium",
-                        params: z.object({
-                            id: z.string().uuid(),
-                        }),
                         response: {
                             200: AquariumDtoSchema,
                         },
@@ -137,9 +161,6 @@ export default (async (fastify) => {
                     schema: {
                         tags: ["aquariums"],
                         description: "Update an aquarium",
-                        params: z.object({
-                            id: z.string().uuid(),
-                        }),
                         body: AquariumUpdateDtoSchema,
                         response: {
                             200: AquariumDtoSchema,
@@ -167,9 +188,6 @@ export default (async (fastify) => {
                     schema: {
                         tags: ["aquariums"],
                         description: "Archive an aquarium",
-                        params: z.object({
-                            id: z.string().uuid(),
-                        }),
                         response: {
                             200: AquariumDtoSchema,
                         },
@@ -196,9 +214,6 @@ export default (async (fastify) => {
                     schema: {
                         tags: ["aquariums"],
                         description: "Unarchive an aquarium",
-                        params: z.object({
-                            id: z.string().uuid(),
-                        }),
                         response: {
                             200: AquariumDtoSchema,
                         },
@@ -230,9 +245,6 @@ export default (async (fastify) => {
                         tags: ["aquariums"],
                         description: "Add temperature measurement of aquarium",
                         deprecated: true,
-                        params: z.object({
-                            id: z.string().uuid(),
-                        }),
                         body: z.object({
                             temperature: z.number(),
                         }),

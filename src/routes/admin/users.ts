@@ -137,26 +137,6 @@ export default (async (fastify) => {
             },
         },
         async function (req, res) {
-            const emailExists = await UserModel.findOne({
-                where: {
-                    email: req.body.email,
-                },
-            });
-
-            const usernameExists = await UserModel.findOne({
-                where: {
-                    username: req.body.username,
-                },
-            });
-
-            if (emailExists) {
-                throw new EmailAlreadyExistApiError();
-            }
-
-            if (usernameExists) {
-                throw new UsernameAlreadyExistApiError();
-            }
-
             const hashPassword = await bcrypt.hash(req.body.password, 10);
 
             const user = await UserModel.create({
@@ -201,44 +181,12 @@ export default (async (fastify) => {
                 throw new UserNotFoundApiError();
             }
 
-            if (req.body.email && req.body.email !== user.email) {
-                const emailExists = await UserModel.findOne({
-                    where: {
-                        email: req.body.email,
-                    },
-                });
-
-                if (emailExists) {
-                    throw new EmailAlreadyExistApiError();
-                }
-
-                user.email = req.body.email;
-            }
-
-            if (req.body.username && req.body.username !== user.username) {
-                const usernameExists = await UserModel.findOne({
-                    where: {
-                        username: req.body.username,
-                    },
-                });
-
-                if (usernameExists) {
-                    throw new UsernameAlreadyExistApiError();
-                }
-
-                user.username = req.body.username;
-            }
-
             if (req.body.password) {
                 const hashPassword = await bcrypt.hash(req.body.password, 10);
-                user.password = hashPassword;
+                req.body.password = hashPassword;
             }
 
-            if (req.body.isAdmin && req.body.isAdmin !== user.isAdmin) {
-                user.isAdmin = req.body.isAdmin;
-            }
-
-            await user.save();
+            await user.update(req.body);
 
             return AdminUserDtoSchema.parse(user);
         },

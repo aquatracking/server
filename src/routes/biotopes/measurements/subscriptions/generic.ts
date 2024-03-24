@@ -3,13 +3,13 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { MeasurementSubscriptionCreateDtoSchema } from "../../../../dto/measurementSubscription/MeasurementSubscriptionCreateDto";
 import { MeasurementSubscriptionDtoSchema } from "../../../../dto/measurementSubscription/MeasurementSubscriptionDto";
-import { MeasurementSubscriptionWithTypeDtoSchema } from "../../../../dto/measurementSubscription/MeasurementSubscriptionWithTypeDto";
-import { MeasurementTypeNotFoundApiError } from "../../../../errors/ApiError/MeasurementTypeNotFoundApiError";
-import { MeasurementTypeModel } from "../../../../model/MeasurementTypeModel";
-import { MeasurementSubscriptionModel } from "../../../../model/MeasurementSubscriptionModel";
-import { MeasurementSubscriptionNotFoundApiError } from "../../../../errors/ApiError/MeasurementSubscriptionNotFoundApiError";
 import { MeasurementSubscriptionUpdateDtoSchema } from "../../../../dto/measurementSubscription/MeasurementSubscriptionUpdateDto";
+import { MeasurementSubscriptionWithTypeDtoSchema } from "../../../../dto/measurementSubscription/MeasurementSubscriptionWithTypeDto";
 import { MeasurementSubscriptionAlreadyExistApiError } from "../../../../errors/ApiError/MeasurementSubscriptionAlreadyExistApiError";
+import { MeasurementSubscriptionNotFoundApiError } from "../../../../errors/ApiError/MeasurementSubscriptionNotFoundApiError";
+import { MeasurementTypeNotFoundApiError } from "../../../../errors/ApiError/MeasurementTypeNotFoundApiError";
+import { MeasurementSubscriptionModel } from "../../../../model/MeasurementSubscriptionModel";
+import { MeasurementTypeModel } from "../../../../model/MeasurementTypeModel";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -25,9 +25,6 @@ export default (async (fastify) => {
             schema: {
                 tags: [`${schemaBiotopeType}s`],
                 description: `Get ${schemaBiotopeType}'s measurement subscriptions. Order by order ascending.`,
-                params: z.object({
-                    id: z.string().uuid(),
-                }),
                 response: {
                     200: MeasurementSubscriptionWithTypeDtoSchema.array(),
                 },
@@ -61,7 +58,6 @@ export default (async (fastify) => {
                 tags: [`${schemaBiotopeType}s`],
                 description: `Add a measurement subscription to ${schemaBiotopeType}.`,
                 params: z.object({
-                    id: z.string().uuid(),
                     code: z.string(),
                 }),
                 body: MeasurementSubscriptionCreateDtoSchema,
@@ -119,7 +115,6 @@ export default (async (fastify) => {
                 tags: [`${schemaBiotopeType}s`],
                 description: `Delete a measurement subscription from ${schemaBiotopeType}.`,
                 params: z.object({
-                    id: z.string().uuid(),
                     code: z.string(),
                 }),
                 response: {
@@ -167,7 +162,6 @@ export default (async (fastify) => {
                 tags: [`${schemaBiotopeType}s`],
                 description: `Update a measurement subscription from ${schemaBiotopeType}.`,
                 params: z.object({
-                    id: z.string().uuid(),
                     code: z.string(),
                 }),
                 body: MeasurementSubscriptionUpdateDtoSchema,
