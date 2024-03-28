@@ -13,15 +13,19 @@ import { UsernameAlreadyExistApiError } from "../../errors/ApiError/UsernameAlre
 import { WrongOTPApiError } from "../../errors/ApiError/WrongOTPApiError";
 import { WrongPasswordApiError } from "../../errors/ApiError/WrongPasswordApiError";
 import { UserModel } from "../../model/UserModel";
+import { injectTagSchemaInRouteOption } from "../../utils/routeOptionInjection";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
+
+    instance.addHook("onRoute", (routeOptions) => {
+        injectTagSchemaInRouteOption(routeOptions, "users");
+    });
 
     instance.get(
         "/",
         {
             schema: {
-                tags: ["admin", "users"],
                 description: "Get all users",
                 response: {
                     200: AdminUserDtoSchema.array(),
@@ -39,7 +43,6 @@ export default (async (fastify) => {
         "/:id",
         {
             schema: {
-                tags: ["admin", "users"],
                 description: "Get a user",
                 params: z.object({
                     id: z.string().uuid(),
@@ -69,7 +72,6 @@ export default (async (fastify) => {
         "/:id",
         {
             schema: {
-                tags: ["admin", "users"],
                 description:
                     "Delete a user. The data will be definitely lost after 30 days.",
                 params: z.object({
@@ -124,7 +126,6 @@ export default (async (fastify) => {
         "/",
         {
             schema: {
-                tags: ["admin", "users"],
                 description: "Create a user",
                 body: AdminUserCreateDtoSchema,
                 response: {
@@ -154,7 +155,6 @@ export default (async (fastify) => {
         "/:id",
         {
             schema: {
-                tags: ["admin", "users"],
                 description: "Update a user",
                 params: z.object({
                     id: z.string().uuid(),

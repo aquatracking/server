@@ -17,15 +17,19 @@ import { WrongPasswordApiError } from "../errors/ApiError/WrongPasswordApiError"
 import { UserModel } from "../model/UserModel";
 import { UserSessionModel } from "../model/UserSessionModel";
 import UserTokenUtil from "../utils/UserTokenUtil";
+import { injectTagSchemaInRouteOption } from "../utils/routeOptionInjection";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
+
+    instance.addHook("onRoute", (routeOptions) => {
+        injectTagSchemaInRouteOption(routeOptions, "auth");
+    });
 
     instance.post(
         "/register",
         {
             schema: {
-                tags: ["auth"],
                 description: "Register a new user",
                 body: UserCreateDtoSchema,
                 response: {
@@ -64,7 +68,6 @@ export default (async (fastify) => {
         "/login",
         {
             schema: {
-                tags: ["auth"],
                 description:
                     "Login a user and return a session token in a cookie",
                 body: z.object({
@@ -144,7 +147,6 @@ export default (async (fastify) => {
         "/logout",
         {
             schema: {
-                tags: ["auth"],
                 description: "Logout a user and delete his session",
                 response: {
                     204: z.void(),

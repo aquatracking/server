@@ -10,6 +10,7 @@ import { BiotopeModel } from "../../model/BiotopeModel";
 import {
     injectParamSchemaInRouteOption,
     injectResponseSchemaInRouteOption,
+    injectTagSchemaInRouteOption,
 } from "../../utils/routeOptionInjection";
 import { UserNotOwnerOfAquariumApiError } from "../../errors/ApiError/UserNotOwnerOfAquariumApiError";
 import { AquariumNotFoundApiError } from "../../errors/ApiError/AquariumNotFoundApiError";
@@ -17,11 +18,14 @@ import { AquariumNotFoundApiError } from "../../errors/ApiError/AquariumNotFound
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
 
+    instance.addHook("onRoute", (routeOptions) => {
+        injectTagSchemaInRouteOption(routeOptions, "aquariums");
+    });
+
     instance.get(
         "/",
         {
             schema: {
-                tags: ["aquariums"],
                 description:
                     "Get all aquariums not archived of the connected user",
                 response: {
@@ -55,7 +59,6 @@ export default (async (fastify) => {
         "/",
         {
             schema: {
-                tags: ["aquariums"],
                 description: "Create an aquarium",
                 body: AquariumCreateDtoSchema,
                 response: {
@@ -136,7 +139,6 @@ export default (async (fastify) => {
                 "/",
                 {
                     schema: {
-                        tags: ["aquariums"],
                         description: "Get an aquarium",
                         response: {
                             200: AquariumDtoSchema,
@@ -159,7 +161,6 @@ export default (async (fastify) => {
                 "/",
                 {
                     schema: {
-                        tags: ["aquariums"],
                         description: "Update an aquarium",
                         body: AquariumUpdateDtoSchema,
                         response: {
@@ -186,7 +187,6 @@ export default (async (fastify) => {
                 "/archive",
                 {
                     schema: {
-                        tags: ["aquariums"],
                         description: "Archive an aquarium",
                         response: {
                             200: AquariumDtoSchema,
@@ -212,7 +212,6 @@ export default (async (fastify) => {
                 "/unarchive",
                 {
                     schema: {
-                        tags: ["aquariums"],
                         description: "Unarchive an aquarium",
                         response: {
                             200: AquariumDtoSchema,
@@ -242,7 +241,6 @@ export default (async (fastify) => {
                 "/temperature",
                 {
                     schema: {
-                        tags: ["aquariums"],
                         description: "Add temperature measurement of aquarium",
                         deprecated: true,
                         body: z.object({

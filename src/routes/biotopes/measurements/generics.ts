@@ -31,7 +31,6 @@ export default (async (fastify) => {
         "/",
         {
             schema: {
-                tags: [`${schemaBiotopeType}s`],
                 description: `Get ${schemaBiotopeType}'s measurements. Order by most recent measuredAt to least recent measuredAt`,
                 querystring: measurementsQueryStringSchema,
                 response: {
@@ -72,7 +71,6 @@ export default (async (fastify) => {
         "/last",
         {
             schema: {
-                tags: [`${schemaBiotopeType}s`],
                 description: `Get last ${schemaBiotopeType}'s measurement.`,
                 querystring: measurementsQueryStringSchema,
                 response: {
@@ -114,7 +112,6 @@ export default (async (fastify) => {
         "/:measurementId",
         {
             schema: {
-                tags: [`${schemaBiotopeType}s`],
                 description: `Get measurement by id`,
                 params: z.object({
                     measurementId: z.string().uuid(),
@@ -144,7 +141,6 @@ export default (async (fastify) => {
         "/",
         {
             schema: {
-                tags: [`${schemaBiotopeType}s`],
                 description: `Add ${schemaBiotopeType}'s measurement`,
                 body: MeasurementCreateDtoSchema,
                 response: {
@@ -165,7 +161,6 @@ export default (async (fastify) => {
         "/:measurementId",
         {
             schema: {
-                tags: [`${schemaBiotopeType}s`],
                 description: `Delete measurement by id`,
                 params: z.object({
                     measurementId: z.string().uuid(),

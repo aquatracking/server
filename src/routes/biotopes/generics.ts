@@ -12,7 +12,6 @@ export default (async (fastify) => {
         "/image",
         {
             schema: {
-                tags: [`${schemaBiotopeType}s`],
                 description: `Get an ${schemaBiotopeType} image`,
                 params: z.object({
                     id: z.string().uuid(),
@@ -33,7 +32,6 @@ export default (async (fastify) => {
         "/",
         {
             schema: {
-                tags: [`${schemaBiotopeType}s`],
                 description: `Delete an ${schemaBiotopeType}`,
                 params: z.object({
                     id: z.string().uuid(),

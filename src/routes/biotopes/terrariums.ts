@@ -12,16 +12,20 @@ import { TerrariumModel } from "../../model/TerrariumModel";
 import {
     injectParamSchemaInRouteOption,
     injectResponseSchemaInRouteOption,
+    injectTagSchemaInRouteOption,
 } from "../../utils/routeOptionInjection";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
 
+    instance.addHook("onRoute", (routeOptions) => {
+        injectTagSchemaInRouteOption(routeOptions, "terrariums");
+    });
+
     instance.get(
         "/",
         {
             schema: {
-                tags: ["terrariums"],
                 description:
                     "Get all terrariums not archived of the connected user",
                 response: {
@@ -55,7 +59,6 @@ export default (async (fastify) => {
         "/",
         {
             schema: {
-                tags: ["terrariums"],
                 description: "Create an terrarium",
                 body: TerrariumCreateDtoSchema,
                 response: {
@@ -136,7 +139,6 @@ export default (async (fastify) => {
                 "/",
                 {
                     schema: {
-                        tags: ["terrariums"],
                         description: "Get an terrarium",
                         response: {
                             200: TerrariumDtoSchema,
@@ -159,7 +161,6 @@ export default (async (fastify) => {
                 "/",
                 {
                     schema: {
-                        tags: ["terrariums"],
                         description: "Update an terrarium",
                         body: TerrariumUpdateDtoSchema,
                         response: {
@@ -186,7 +187,6 @@ export default (async (fastify) => {
                 "/archive",
                 {
                     schema: {
-                        tags: ["terrariums"],
                         description: "Archive an terrarium",
                         response: {
                             200: TerrariumDtoSchema,
@@ -212,7 +212,6 @@ export default (async (fastify) => {
                 "/unarchive",
                 {
                     schema: {
-                        tags: ["terrariums"],
                         description: "Unarchive an terrarium",
                         response: {
                             200: TerrariumDtoSchema,

@@ -70,3 +70,24 @@ export function injectParamSchemaInRouteOption(
 
     routeOptions.schema.params = routeOptions.schema.params.merge(schema);
 }
+
+export function injectTagSchemaInRouteOption(
+    routeOptions: any,
+    tag: string,
+): void {
+    if (routeOptions.method === "HEAD" || routeOptions.method === "OPTIONS") {
+        return;
+    }
+
+    if (!routeOptions.schema) {
+        routeOptions.schema = {};
+    }
+
+    if (!routeOptions.schema.tags) {
+        routeOptions.schema.tags = [];
+    }
+
+    if (!routeOptions.schema.tags.includes(tag)) {
+        routeOptions.schema.tags.push(tag);
+    }
+}

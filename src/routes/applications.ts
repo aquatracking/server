@@ -4,15 +4,19 @@ import { ApplicationCreateDtoSchema } from "../dto/application/applicationCreate
 import { ApplicationCreatedDtoSchema } from "../dto/application/applicationCreatedDto";
 import UserTokenUtil from "../utils/UserTokenUtil";
 import { UserDtoSchema } from "../dto/user/userDto";
+import { injectTagSchemaInRouteOption } from "../utils/routeOptionInjection";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
+
+    instance.addHook("onRoute", (routeOptions) => {
+        injectTagSchemaInRouteOption(routeOptions, "applications");
+    });
 
     instance.post(
         "/",
         {
             schema: {
-                tags: ["applications"],
                 description: "Register a new application",
                 body: ApplicationCreateDtoSchema,
                 response: {

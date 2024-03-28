@@ -5,15 +5,19 @@ import { UserSessionDtoSchema } from "../../../dto/userSession/userSessionDto";
 import { NotSessionLoggedUserApiError } from "../../../errors/ApiError/NotSessionLoggedUserApiError";
 import { UserSessionNotFoundApiError } from "../../../errors/ApiError/UserSessionNotFoundApiError";
 import { UserSessionModel } from "../../../model/UserSessionModel";
+import { injectTagSchemaInRouteOption } from "../../../utils/routeOptionInjection";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
+
+    instance.addHook("onRoute", (routeOptions) => {
+        injectTagSchemaInRouteOption(routeOptions, "sessions");
+    });
 
     instance.get(
         "/",
         {
             schema: {
-                tags: ["users", "sessions"],
                 description: "Get the current user's sessions.",
                 response: {
                     200: UserSessionDtoSchema.array(),
@@ -38,7 +42,6 @@ export default (async (fastify) => {
         "/:id",
         {
             schema: {
-                tags: ["users", "sessions"],
                 description: "Get a session.",
                 params: z.object({
                     id: z.string().uuid(),
@@ -72,7 +75,6 @@ export default (async (fastify) => {
         "/current",
         {
             schema: {
-                tags: ["users", "sessions"],
                 description: "Get the current user's session.",
                 response: {
                     200: UserSessionDtoSchema,
@@ -96,7 +98,6 @@ export default (async (fastify) => {
         "/",
         {
             schema: {
-                tags: ["users", "sessions"],
                 description: "Delete all the current user's sessions.",
                 response: {
                     204: z.void(),
@@ -114,7 +115,6 @@ export default (async (fastify) => {
         "/:id",
         {
             schema: {
-                tags: ["users", "sessions"],
                 description: "Delete a session.",
                 params: z.object({
                     id: z.string().uuid(),

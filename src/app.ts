@@ -25,7 +25,10 @@ import { MeasurementTypeModel } from "./model/MeasurementTypeModel";
 import { UserModel } from "./model/UserModel";
 import { UserSessionModel } from "./model/UserSessionModel";
 import Db from "./model/db";
-import { injectResponseSchemaInRouteOption } from "./utils/routeOptionInjection";
+import {
+    injectResponseSchemaInRouteOption,
+    injectTagSchemaInRouteOption,
+} from "./utils/routeOptionInjection";
 import { InvalidRequestBodyApiError } from "./errors/ApiError/InvalidRequestBodyApiError";
 import { InvalidRequestHeadersApiError } from "./errors/ApiError/InvalidRequestHeadersApiError";
 import { InvalidRequestParamsApiError } from "./errors/ApiError/InvalidRequestParamsApiError";
@@ -283,6 +286,8 @@ await fastify.register(async (instance) => {
                 );
 
                 instance.addHook("onRoute", (routeOptions) => {
+                    injectTagSchemaInRouteOption(routeOptions, "admin");
+
                     injectResponseSchemaInRouteOption(
                         routeOptions,
                         403,

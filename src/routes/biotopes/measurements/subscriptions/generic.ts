@@ -23,7 +23,6 @@ export default (async (fastify) => {
         "/",
         {
             schema: {
-                tags: [`${schemaBiotopeType}s`],
                 description: `Get ${schemaBiotopeType}'s measurement subscriptions. Order by order ascending.`,
                 response: {
                     200: MeasurementSubscriptionWithTypeDtoSchema.array(),
@@ -55,7 +54,6 @@ export default (async (fastify) => {
         "/:code",
         {
             schema: {
-                tags: [`${schemaBiotopeType}s`],
                 description: `Add a measurement subscription to ${schemaBiotopeType}.`,
                 params: z.object({
                     code: z.string(),
@@ -112,7 +110,6 @@ export default (async (fastify) => {
         "/:code",
         {
             schema: {
-                tags: [`${schemaBiotopeType}s`],
                 description: `Delete a measurement subscription from ${schemaBiotopeType}.`,
                 params: z.object({
                     code: z.string(),
@@ -159,7 +156,6 @@ export default (async (fastify) => {
         "/:code",
         {
             schema: {
-                tags: [`${schemaBiotopeType}s`],
                 description: `Update a measurement subscription from ${schemaBiotopeType}.`,
                 params: z.object({
                     code: z.string(),
