@@ -13,15 +13,19 @@ import { UsernameAlreadyExistApiError } from "../../errors/ApiError/UsernameAlre
 import { WrongOTPApiError } from "../../errors/ApiError/WrongOTPApiError";
 import { WrongPasswordApiError } from "../../errors/ApiError/WrongPasswordApiError";
 import { UserModel } from "../../model/UserModel";
+import { injectTagSchemaInRouteOption } from "../../utils/routeOptionInjection";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
+
+    instance.addHook("onRoute", (routeOptions) => {
+        injectTagSchemaInRouteOption(routeOptions, "users");
+    });
 
     instance.get(
         "/",
         {
             schema: {
-                tags: ["admin", "users"],
                 description: "Get all users",
                 response: {
                     200: AdminUserDtoSchema.array(),
@@ -39,7 +43,6 @@ export default (async (fastify) => {
         "/:id",
         {
             schema: {
-                tags: ["admin", "users"],
                 description: "Get a user",
                 params: z.object({
                     id: z.string().uuid(),
@@ -69,7 +72,6 @@ export default (async (fastify) => {
         "/:id",
         {
             schema: {
-                tags: ["admin", "users"],
                 description:
                     "Delete a user. The data will be definitely lost after 30 days.",
                 params: z.object({
@@ -124,7 +126,6 @@ export default (async (fastify) => {
         "/",
         {
             schema: {
-                tags: ["admin", "users"],
                 description: "Create a user",
                 body: AdminUserCreateDtoSchema,
                 response: {
@@ -137,26 +138,6 @@ export default (async (fastify) => {
             },
         },
         async function (req, res) {
-            const emailExists = await UserModel.findOne({
-                where: {
-                    email: req.body.email,
-                },
-            });
-
-            const usernameExists = await UserModel.findOne({
-                where: {
-                    username: req.body.username,
-                },
-            });
-
-            if (emailExists) {
-                throw new EmailAlreadyExistApiError();
-            }
-
-            if (usernameExists) {
-                throw new UsernameAlreadyExistApiError();
-            }
-
             const hashPassword = await bcrypt.hash(req.body.password, 10);
 
             const user = await UserModel.create({
@@ -174,7 +155,6 @@ export default (async (fastify) => {
         "/:id",
         {
             schema: {
-                tags: ["admin", "users"],
                 description: "Update a user",
                 params: z.object({
                     id: z.string().uuid(),
@@ -201,44 +181,12 @@ export default (async (fastify) => {
                 throw new UserNotFoundApiError();
             }
 
-            if (req.body.email && req.body.email !== user.email) {
-                const emailExists = await UserModel.findOne({
-                    where: {
-                        email: req.body.email,
-                    },
-                });
-
-                if (emailExists) {
-                    throw new EmailAlreadyExistApiError();
-                }
-
-                user.email = req.body.email;
-            }
-
-            if (req.body.username && req.body.username !== user.username) {
-                const usernameExists = await UserModel.findOne({
-                    where: {
-                        username: req.body.username,
-                    },
-                });
-
-                if (usernameExists) {
-                    throw new UsernameAlreadyExistApiError();
-                }
-
-                user.username = req.body.username;
-            }
-
             if (req.body.password) {
                 const hashPassword = await bcrypt.hash(req.body.password, 10);
-                user.password = hashPassword;
+                req.body.password = hashPassword;
             }
 
-            if (req.body.isAdmin && req.body.isAdmin !== user.isAdmin) {
-                user.isAdmin = req.body.isAdmin;
-            }
-
-            await user.save();
+            await user.update(req.body);
 
             return AdminUserDtoSchema.parse(user);
         },

@@ -76,9 +76,11 @@ export default class Db {
                 },
                 totpSecret: {
                     type: DataTypes.STRING,
+                    defaultValue: null,
                 },
                 deleteAt: {
                     type: DataTypes.DATE,
+                    defaultValue: null,
                 },
                 isAdmin: {
                     type: DataTypes.BOOLEAN,
@@ -243,6 +245,7 @@ export default class Db {
                 },
                 image: {
                     type: DataTypes.BLOB,
+                    defaultValue: null,
                 },
                 startedDate: {
                     type: DataTypes.DATE,
@@ -251,9 +254,11 @@ export default class Db {
                 },
                 archivedDate: {
                     type: DataTypes.DATE,
+                    defaultValue: null,
                 },
                 volume: {
                     type: DataTypes.INTEGER,
+                    defaultValue: null,
                 },
                 userId: {
                     type: DataTypes.UUID,
@@ -365,9 +370,11 @@ export default class Db {
                 },
                 min: {
                     type: DataTypes.DOUBLE,
+                    defaultValue: null,
                 },
                 max: {
                     type: DataTypes.DOUBLE,
+                    defaultValue: null,
                 },
             },
             { sequelize, tableName: "measurement_subscription" },

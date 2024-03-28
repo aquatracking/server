@@ -42,9 +42,11 @@ export const up: Migration = async ({ context: queryInterface }) => {
         },
         totpSecret: {
             type: DataTypes.STRING,
+            defaultValue: null,
         },
         deleteAt: {
             type: DataTypes.DATE,
+            defaultValue: null,
         },
         isAdmin: {
             type: DataTypes.BOOLEAN,
@@ -225,6 +227,7 @@ export const up: Migration = async ({ context: queryInterface }) => {
         },
         image: {
             type: DataTypes.BLOB,
+            defaultValue: null,
         },
         startedDate: {
             type: DataTypes.DATE,
@@ -233,9 +236,11 @@ export const up: Migration = async ({ context: queryInterface }) => {
         },
         archivedDate: {
             type: DataTypes.DATE,
+            defaultValue: null,
         },
         volume: {
             type: DataTypes.INTEGER,
+            defaultValue: null,
         },
         userId: {
             type: DataTypes.UUID,
@@ -367,9 +372,11 @@ export const up: Migration = async ({ context: queryInterface }) => {
         },
         min: {
             type: DataTypes.DOUBLE,
+            defaultValue: null,
         },
         max: {
             type: DataTypes.DOUBLE,
+            defaultValue: null,
         },
         createdAt: {
             type: DataTypes.DATE,

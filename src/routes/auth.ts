@@ -1,12 +1,14 @@
 import bcrypt from "bcryptjs";
 import { FastifyPluginAsync } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
+import { UAParser } from "ua-parser-js";
 import { z } from "zod";
 import MailSender from "../agents/MailSender";
 import { UserCreateDtoSchema } from "../dto/user/userCreateDto";
 import { UserDtoSchema } from "../dto/user/userDto";
 import { env } from "../env";
 import { EmailAlreadyExistApiError } from "../errors/ApiError/EmailAlreadyExistApiError";
+import { NotLoggedApiError } from "../errors/ApiError/NotLoggedApiError";
 import { OTPRequiredApiError } from "../errors/ApiError/OTPRequiredApiError";
 import { UserNotFoundApiError } from "../errors/ApiError/UserNotFoundApiError";
 import { UsernameAlreadyExistApiError } from "../errors/ApiError/UsernameAlreadyExistApiError";
@@ -15,17 +17,19 @@ import { WrongPasswordApiError } from "../errors/ApiError/WrongPasswordApiError"
 import { UserModel } from "../model/UserModel";
 import { UserSessionModel } from "../model/UserSessionModel";
 import UserTokenUtil from "../utils/UserTokenUtil";
-import { NotLoggedApiError } from "../errors/ApiError/NotLoggedApiError";
-import { UAParser } from "ua-parser-js";
+import { injectTagSchemaInRouteOption } from "../utils/routeOptionInjection";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
+
+    instance.addHook("onRoute", (routeOptions) => {
+        injectTagSchemaInRouteOption(routeOptions, "auth");
+    });
 
     instance.post(
         "/register",
         {
             schema: {
-                tags: ["auth"],
                 description: "Register a new user",
                 body: UserCreateDtoSchema,
                 response: {
@@ -48,26 +52,6 @@ export default (async (fastify) => {
                 return res.status(403).send();
             }
 
-            const emailExists = await UserModel.findOne({
-                where: {
-                    email: req.body.email,
-                },
-            });
-
-            if (emailExists) {
-                throw new EmailAlreadyExistApiError();
-            }
-
-            const usernameExists = await UserModel.findOne({
-                where: {
-                    username: req.body.username,
-                },
-            });
-
-            if (usernameExists) {
-                throw new UsernameAlreadyExistApiError();
-            }
-
             const hashPassword = await bcrypt.hash(req.body.password, 10);
 
             const user = await UserModel.create({
@@ -84,7 +68,6 @@ export default (async (fastify) => {
         "/login",
         {
             schema: {
-                tags: ["auth"],
                 description:
                     "Login a user and return a session token in a cookie",
                 body: z.object({
@@ -164,7 +147,6 @@ export default (async (fastify) => {
         "/logout",
         {
             schema: {
-                tags: ["auth"],
                 description: "Logout a user and delete his session",
                 response: {
                     204: z.void(),

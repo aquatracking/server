@@ -2,20 +2,25 @@ import { FastifyPluginAsync } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { MeasurementTypeCreateDtoSchema } from "../../dto/measurementType/MeasurementTypeCreateDto";
 import { MeasurementTypeDtoSchema } from "../../dto/measurementType/MeasurementTypeDto";
-import { MeasurementTypeModel } from "../../model/MeasurementTypeModel";
 import { MeasurementTypeUpdateDtoSchema } from "../../dto/measurementType/MeasurementTypeUpdateDto";
+import { MeasurementTypeModel } from "../../model/MeasurementTypeModel";
 
 import { z } from "zod";
+import { CantDeleteUsedMeasurementTypeApiError } from "../../errors/ApiError/CantDeleteUsedMeasurementTypeApiError";
 import { MeasurementTypeNotFoundApiError } from "../../errors/ApiError/MeasurementTypeNotFoundApiError";
+import { injectTagSchemaInRouteOption } from "../../utils/routeOptionInjection";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
+
+    instance.addHook("onRoute", (routeOptions) => {
+        injectTagSchemaInRouteOption(routeOptions, "measurementTypes");
+    });
 
     instance.post(
         "/",
         {
             schema: {
-                tags: ["admin", "measurementTypes"],
                 description: "Create a new measurement type",
                 body: MeasurementTypeCreateDtoSchema,
                 response: {
@@ -36,7 +41,6 @@ export default (async (fastify) => {
         "/:code",
         {
             schema: {
-                tags: ["admin", "measurementTypes"],
                 description: "Update a measurement type",
                 params: z.object({
                     code: z.string(),
@@ -69,7 +73,6 @@ export default (async (fastify) => {
         "/:code",
         {
             schema: {
-                tags: ["admin", "measurementTypes"],
                 description: "Delete a measurement type",
                 params: z.object({
                     code: z.string(),
@@ -77,6 +80,7 @@ export default (async (fastify) => {
                 response: {
                     204: z.void(),
                     404: MeasurementTypeNotFoundApiError.schema,
+                    409: CantDeleteUsedMeasurementTypeApiError.schema,
                 },
             },
         },

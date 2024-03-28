@@ -4,15 +4,19 @@ import { MeasurementTypeDtoSchema } from "../dto/measurementType/MeasurementType
 import { MeasurementTypeModel } from "../model/MeasurementTypeModel";
 import { z } from "zod";
 import { MeasurementTypeNotFoundApiError } from "../errors/ApiError/MeasurementTypeNotFoundApiError";
+import { injectTagSchemaInRouteOption } from "../utils/routeOptionInjection";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
+
+    instance.addHook("onRoute", (routeOptions) => {
+        injectTagSchemaInRouteOption(routeOptions, "measurementTypes");
+    });
 
     instance.get(
         "/",
         {
             schema: {
-                tags: ["measurementTypes"],
                 description: "Get all measurement types",
                 response: {
                     200: MeasurementTypeDtoSchema.array(),
@@ -32,7 +36,6 @@ export default (async (fastify) => {
         "/:code",
         {
             schema: {
-                tags: ["measurementTypes"],
                 description: "Get a measurement type",
                 params: z.object({
                     code: z.string(),

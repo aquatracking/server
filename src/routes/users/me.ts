@@ -16,15 +16,19 @@ import { TOTPNotEnabledApiError } from "../../errors/ApiError/TOTPNotEnabledApiE
 import { WrongOTPApiError } from "../../errors/ApiError/WrongOTPApiError";
 import { WrongPasswordApiError } from "../../errors/ApiError/WrongPasswordApiError";
 import { EmailValidationOTPModel } from "../../model/EmailValidationOTPModel";
+import { injectTagSchemaInRouteOption } from "../../utils/routeOptionInjection";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
+
+    instance.addHook("onRoute", (routeOptions) => {
+        injectTagSchemaInRouteOption(routeOptions, "users");
+    });
 
     instance.post(
         "/verify-email/send-code",
         {
             schema: {
-                tags: ["users"],
                 description:
                     "Send a code to the connected user's email to verify it. The code is valid for 5 minutes.",
                 response: {
@@ -75,7 +79,6 @@ export default (async (fastify) => {
         "/verify-email/verify-code",
         {
             schema: {
-                tags: ["users"],
                 description: `Verify the user's email with the code sent. Use ${instance.prefix}/verify-email/send-code to send a code.`,
                 body: z.object({
                     code: z.string().length(6),
@@ -124,7 +127,6 @@ export default (async (fastify) => {
         "/totp/enable",
         {
             schema: {
-                tags: ["users"],
                 description: `Enable TOTP for the connected user. Will need verify with ${instance.prefix}/totp/enable/verify.`,
                 body: z.object({
                     password: z.string(),
@@ -165,7 +167,6 @@ export default (async (fastify) => {
         "/totp/enable/verify",
         {
             schema: {
-                tags: ["users"],
                 description: `Verify the TOTP code for the connected user. Use ${instance.prefix}/totp/enable to enable TOTP.`,
                 body: z.object({
                     otp: z.string().length(6),
@@ -210,7 +211,6 @@ export default (async (fastify) => {
         "/totp/disable",
         {
             schema: {
-                tags: ["users"],
                 description: `Disable TOTP for the connected user.`,
                 body: z.object({
                     password: z.string(),
@@ -247,7 +247,6 @@ export default (async (fastify) => {
         "/",
         {
             schema: {
-                tags: ["users"],
                 description:
                     "Delete the connected user. The data will be definitely lost after 30 days.",
                 body: z.object({
@@ -284,7 +283,6 @@ export default (async (fastify) => {
         "/",
         {
             schema: {
-                tags: ["users"],
                 description: "Get the current user",
                 response: {
                     200: UserDtoSchema,
