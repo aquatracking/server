@@ -31,7 +31,8 @@ const servicePortSchema = z.preprocess(
 );
 
 const envSchema = z.object({
-    PORT: portSchema,
+    SERVER_HTTP_PORT: portSchema,
+    SERVER_HTTP_HOST: z.string().ip().optional(),
     MARIADB_HOST: z.string().min(1),
     MARIADB_PORT: servicePortSchema,
     MARIADB_USER: z.string().min(1),

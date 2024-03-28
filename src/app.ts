@@ -95,9 +95,9 @@ await fastify.register(import("@fastify/swagger-ui"), {
     routePrefix: "/documentation",
 });
 
-const port = Number.parseInt(env.PORT.toString());
-fastify.listen({ port: port }, () => {
-    console.log(`Server started on port ${port}.`);
+fastify.listen({
+    port: Number.parseInt(env.SERVER_HTTP_PORT.toString(), 10),
+    host: env.SERVER_HTTP_HOST ?? "127.0.0.1",
 });
 
 // - - - - - Authentication Middleware - - - - - //
