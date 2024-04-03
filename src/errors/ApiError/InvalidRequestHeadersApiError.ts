@@ -6,6 +6,7 @@ export class InvalidRequestHeadersApiError extends ApiError {
         statusCode: z.literal(400),
         error: z.literal("Bad Request"),
         code: z.literal("INVALID_REQUEST_HEADERS"),
+        data: z.unknown(),
     });
 
     constructor() {

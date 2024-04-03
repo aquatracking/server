@@ -6,6 +6,7 @@ export class InvalidRequestBodyApiError extends ApiError {
         statusCode: z.literal(400),
         error: z.literal("Bad Request"),
         code: z.literal("INVALID_REQUEST_BODY"),
+        data: z.unknown(),
     });
 
     constructor() {

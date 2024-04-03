@@ -6,6 +6,7 @@ export class InvalidRequestQueryStringApiError extends ApiError {
         statusCode: z.literal(400),
         error: z.literal("Bad Request"),
         code: z.literal("INVALID_REQUEST_QUERYSTRING"),
+        data: z.unknown(),
     });
 
     constructor() {

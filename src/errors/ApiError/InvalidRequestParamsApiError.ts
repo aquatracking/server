@@ -6,6 +6,7 @@ export class InvalidRequestParamsApiError extends ApiError {
         statusCode: z.literal(400),
         error: z.literal("Bad Request"),
         code: z.literal("INVALID_REQUEST_PARAMS"),
+        data: z.unknown(),
     });
 
     constructor() {
