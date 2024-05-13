@@ -17,10 +17,6 @@ export function injectResponseSchemaInRouteOption(
         routeOptions.schema.response = {};
     }
 
-    if (!routeOptions.schema.response[200] && statusCode !== 200) {
-        routeOptions.schema.response[200] = z.void();
-    }
-
     if (
         !routeOptions.schema.response[statusCode] ||
         routeOptions.schema.response[statusCode] instanceof z.ZodVoid

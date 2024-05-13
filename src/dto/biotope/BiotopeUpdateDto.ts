@@ -5,8 +5,8 @@ export const BiotopeUpdateDtoSchema = z
         name: z.string().min(1).max(100),
         description: z.string().max(255),
         startedDate: z.coerce.date(),
-        image: z.custom<Blob>(),
-        volume: z.number(),
+        image: z.custom<Blob>().nullable(),
+        volume: z.number().nullable(),
     })
     .partial();
 
