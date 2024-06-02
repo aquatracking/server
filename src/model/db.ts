@@ -244,7 +244,7 @@ export default class Db {
                     allowNull: false,
                 },
                 image: {
-                    type: DataTypes.BLOB,
+                    type: DataTypes.BLOB("medium"),
                     defaultValue: null,
                 },
                 startedDate: {
