@@ -58,6 +58,7 @@ Db.init()
 console.log("Starting server...");
 const fastify = Fastify({
     logger: true,
+    bodyLimit: 1_500_000,
 });
 
 fastify.setValidatorCompiler(validatorCompiler);

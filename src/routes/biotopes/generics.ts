@@ -24,6 +24,7 @@ export default (async (fastify) => {
         async function (req, res) {
             const biotope = req.biotope!;
 
+            res.type("image/jpeg");
             res.send(biotope.image);
         },
     );
