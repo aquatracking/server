@@ -4,12 +4,13 @@ import { z } from "zod";
 import { MeasurementSubscriptionCreateDtoSchema } from "../../../../dto/measurementSubscription/MeasurementSubscriptionCreateDto";
 import { MeasurementSubscriptionDtoSchema } from "../../../../dto/measurementSubscription/MeasurementSubscriptionDto";
 import { MeasurementSubscriptionUpdateDtoSchema } from "../../../../dto/measurementSubscription/MeasurementSubscriptionUpdateDto";
-import { MeasurementSubscriptionWithTypeDtoSchema } from "../../../../dto/measurementSubscription/MeasurementSubscriptionWithTypeDto";
+import { MeasurementSubscriptionWithTypeAndLastMeasurementDtoSchema } from "../../../../dto/measurementSubscription/MeasurementSubscriptionWithTypeAndLastMeasurementDto";
 import { MeasurementSubscriptionAlreadyExistApiError } from "../../../../errors/ApiError/MeasurementSubscriptionAlreadyExistApiError";
 import { MeasurementSubscriptionNotFoundApiError } from "../../../../errors/ApiError/MeasurementSubscriptionNotFoundApiError";
 import { MeasurementTypeNotFoundApiError } from "../../../../errors/ApiError/MeasurementTypeNotFoundApiError";
 import { MeasurementSubscriptionModel } from "../../../../model/MeasurementSubscriptionModel";
 import { MeasurementTypeModel } from "../../../../model/MeasurementTypeModel";
+import { MeasurementModel } from "../../../../model/MeasurementModel";
 
 export default (async (fastify) => {
     const instance = fastify.withTypeProvider<ZodTypeProvider>();
@@ -25,7 +26,7 @@ export default (async (fastify) => {
             schema: {
                 description: `Get ${schemaBiotopeType}'s measurement subscriptions. Order by order ascending.`,
                 response: {
-                    200: MeasurementSubscriptionWithTypeDtoSchema.array(),
+                    200: MeasurementSubscriptionWithTypeAndLastMeasurementDtoSchema.array(),
                 },
             },
         },
@@ -38,13 +39,34 @@ export default (async (fastify) => {
                     order: [["order", "ASC"]],
                 });
 
+            const lastMeasurements = await Promise.all(
+                measurementSubscriptions.map((measurement) => {
+                    return MeasurementModel.findOne({
+                        where: {
+                            biotopeId: biotope.id,
+                            measurementTypeCode:
+                                measurement.measurementTypeCode,
+                        },
+                        order: [["measuredAt", "DESC"]],
+                    });
+                }),
+            );
+
             res.send(
                 measurementSubscriptions.map((measurement) =>
-                    MeasurementSubscriptionWithTypeDtoSchema.parse({
-                        ...measurement.dataValues,
-                        measurementType:
-                            measurement.MeasurementTypeModel!.dataValues,
-                    }),
+                    MeasurementSubscriptionWithTypeAndLastMeasurementDtoSchema.parse(
+                        {
+                            ...measurement.dataValues,
+                            measurementType:
+                                measurement.MeasurementTypeModel!.dataValues,
+                            lastMeasurement:
+                                lastMeasurements.find(
+                                    (m) =>
+                                        m?.measurementTypeCode ===
+                                        measurement.measurementTypeCode,
+                                ) ?? null,
+                        },
+                    ),
                 ),
             );
         },
