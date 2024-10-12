@@ -6,7 +6,6 @@ import { z } from "zod";
 import MailSender from "../../agents/MailSender";
 import { UserDtoSchema } from "../../dto/user/userDto";
 import { EmailAlreadyVerifiedApiError } from "../../errors/ApiError/EmailAlreadyVerifiedApiError";
-import { ExpiredEmailVerificationCodeApiError } from "../../errors/ApiError/ExpiredEmailVerificationCodeApiError";
 import { InvalidEmailVerificationCodeApiError } from "../../errors/ApiError/InvalidEmailVerificationCodeApiError";
 import { NoEmailVerificationCodeApiError } from "../../errors/ApiError/NoEmailVerificationCodeApiError";
 import { NoTOTPSecretApiError } from "../../errors/ApiError/NoTOTPSecretApiError";
@@ -87,7 +86,6 @@ export default (async (fastify) => {
                     200: z.void(),
                     403: z.union([
                         NoEmailVerificationCodeApiError.schema,
-                        ExpiredEmailVerificationCodeApiError.schema,
                         InvalidEmailVerificationCodeApiError.schema,
                     ]),
                     409: EmailAlreadyVerifiedApiError.schema,
@@ -109,7 +107,7 @@ export default (async (fastify) => {
                 throw new NoEmailVerificationCodeApiError();
             } else if (emailToken.expiresAt < new Date()) {
                 await emailToken.destroy();
-                throw new ExpiredEmailVerificationCodeApiError();
+                throw new NoEmailVerificationCodeApiError();
             } else if (emailToken.code !== req.body.code) {
                 throw new InvalidEmailVerificationCodeApiError();
             }
